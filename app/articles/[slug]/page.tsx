@@ -120,7 +120,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         </div>
       </div>
 
-      <img src={article.image} alt={article.title} className="mb-8 h-[420px] w-full rounded-lg object-cover" />
+      <img src={article.image} alt={article.title} className="h-auto max-h-[500px] w-auto max-w-full object-contain" />
 
       <article className="space-y-5 text-lg leading-8 text-muted-foreground">
         {article.content.split("\n\n").map((paragraph, index) => (
