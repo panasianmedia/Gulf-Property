@@ -15,9 +15,21 @@ const navDropdowns: Record<string, string[]> = {
   Property: ["Residential", "Commercial", "Hospitality", "Retail", "Logistics", "Tourism"],
   UAE: ["Abu Dhabi", "Dubai", "Ras Al Khaimah", "Sharjah"],
   World: ["GCC", "Middle East", "Asia", "Europe", "Americas", "Africa"],
-  Archives: ["E-Zine", "Media-Kit"],
+  Archives: ["E-Zine"],
   // Legacy / Alternate spelling fallback
-  Archive: ["E-Zine", "Media-Kit"],
+  Archive: ["E-Zine"],
+}
+
+// Route Helper Functions
+const getCategoryPath = (item: string) => {
+  if (item === "Home") return "/"
+  return `/${item.toLowerCase().replace(/\s+/g, "-")}`
+}
+
+const getSubcategoryPath = (parentItem: string, subItem: string) => {
+  const parentSlug = parentItem.toLowerCase().replace(/\s+/g, "-")
+  const subSlug = subItem.toLowerCase().replace(/\s+/g, "-")
+  return `/${parentSlug}/${subSlug}`
 }
 
 export function NavMenu() {
@@ -144,68 +156,57 @@ export function NavMenu() {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <ul className="hidden md:flex flex-1 items-center gap-1 overflow-visible py-0">
-              {navItems.map((item) => {
-                const isActive = item === active
-                const subItems = navDropdowns[item]
-                const hasDropdown = Boolean(subItems && subItems.length > 0)
+           {/* Desktop Navigation */}
+<ul className="hidden md:flex flex-1 items-center gap-1 overflow-visible py-0">
+  {navItems.map((item) => {
+    const isActive = item === active
+    const subItems = navDropdowns[item]
+    const hasDropdown = Boolean(subItems && subItems.length > 0)
 
-                return (
-                  <li key={item} className="group relative shrink-0">
-                    {item === "Home" ? (
-                      <Link
-                        href="/"
-                        onClick={() => setActive(item)}
-                        className={`inline-flex items-center gap-1 whitespace-nowrap border-b-2 px-3 py-4 text-sm font-semibold uppercase tracking-wide transition-colors ${
-                          isActive
-                            ? "border-realty text-white"
-                            : "border-transparent text-gray-300 hover:border-realty hover:text-white"
-                        }`}
-                      >
-                        {item}
-                      </Link>
-                    ) : (
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setActive(item)
-                        }}
-                        className={`inline-flex items-center gap-1 whitespace-nowrap border-b-2 px-3 py-4 text-sm font-semibold uppercase tracking-wide transition-colors ${
-                          isActive
-                            ? "border-realty text-white"
-                            : "border-transparent text-gray-300 hover:border-realty hover:text-white"
-                        }`}
-                      >
-                        {item}
-                        {hasDropdown && (
-                          <ChevronDown className="h-3.5 w-3.5 text-gray-400 transition-transform duration-200 group-hover:rotate-180 group-hover:text-white" />
-                        )}
-                      </a>
-                    )}
+    return (
+      <li key={item} className="group relative shrink-0">
+        {hasDropdown ? (
+          // Hover target container
+          <div className="inline-flex items-center gap-1 cursor-pointer whitespace-nowrap border-b-2 px-3 py-4 text-sm font-semibold uppercase tracking-wide transition-colors border-transparent text-gray-300 group-hover:border-realty group-hover:text-white">
+            <span>{item}</span>
+            <ChevronDown className="h-3.5 w-3.5 text-gray-400 transition-transform duration-200 group-hover:rotate-180 group-hover:text-white" />
+          </div>
+        ) : (
+          <Link
+            href={getCategoryPath(item)}
+            onClick={() => setActive(item)}
+            className={`inline-flex items-center gap-1 whitespace-nowrap border-b-2 px-3 py-4 text-sm font-semibold uppercase tracking-wide transition-colors ${
+              isActive
+                ? "border-realty text-white"
+                : "border-transparent text-gray-300 hover:border-realty hover:text-white"
+            }`}
+          >
+            {item}
+          </Link>
+        )}
 
-                    {/* Hover Dropdown Menu */}
-                    {hasDropdown && (
-                      <div className="invisible absolute left-0 top-full z-50 w-52 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
-                        <ul className="mt-0 border-t-2 bg-black shadow-2xl border-x border-b border-gray-800">
-                          {subItems.map((subItem) => (
-                            <li key={subItem}>
-                              <a
-                                href="#"
-                                className="block px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-gray-300 transition-colors hover:bg-realty hover:text-white"
-                              >
-                                {subItem}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </li>
-                )
-              })}
+        {/* Hover Dropdown Menu */}
+        {hasDropdown && (
+          <div className="invisible absolute left-0 top-full z-50 w-52 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+            <ul className="mt-0 border-t-2 bg-black shadow-2xl border-x border-b border-gray-800">
+              {subItems.map((subItem) => (
+                <li key={subItem}>
+                  <Link
+                    href={getSubcategoryPath(item, subItem)}
+                    onClick={() => setActive(item)}
+                    className="block px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-gray-300 transition-colors hover:bg-realty hover:text-white"
+                  >
+                    {subItem}
+                  </Link>
+                </li>
+              ))}
             </ul>
+          </div>
+        )}
+      </li>
+    )
+  })}
+</ul>
 
             {/* Right Action Section */}
             <div className="ml-auto flex items-center gap-3">
@@ -264,9 +265,20 @@ export function NavMenu() {
                 return (
                   <li key={item} className="border-b border-gray-800 last:border-b-0">
                     <div className="flex items-center justify-between">
-                      {item === "Home" ? (
+                      {hasDropdown ? (
+                        /* Mobile Label for categories with sub-items */
+                        <span
+                          onClick={() =>
+                            setExpandedMobileCategory(isExpanded ? null : item)
+                          }
+                          className="block py-3 text-sm font-semibold uppercase tracking-wide text-gray-200 cursor-pointer"
+                        >
+                          {item}
+                        </span>
+                      ) : (
+                        /* Mobile Link for single pages (Home, etc.) */
                         <Link
-                          href="/"
+                          href={getCategoryPath(item)}
                           onClick={() => {
                             setActive(item)
                             setOpen(false)
@@ -275,17 +287,6 @@ export function NavMenu() {
                         >
                           {item}
                         </Link>
-                      ) : (
-                        <a
-                          href="#"
-                          onClick={() => {
-                            setActive(item)
-                            setOpen(false)
-                          }}
-                          className="block py-3 text-sm font-semibold uppercase tracking-wide text-gray-200 hover:text-realty"
-                        >
-                          {item}
-                        </a>
                       )}
 
                       {hasDropdown && (
@@ -294,7 +295,7 @@ export function NavMenu() {
                           onClick={() =>
                             setExpandedMobileCategory(isExpanded ? null : item)
                           }
-                          className="p-2 text-gray-400 hover:text-white"
+                          className="p-2 text-gray-400 hover:text-white cursor-pointer"
                         >
                           <ChevronDown
                             className={`h-4 w-4 transition-transform ${
@@ -309,13 +310,16 @@ export function NavMenu() {
                       <ul className="mb-2 ml-3 border-l-2 border-realty pl-3 space-y-1">
                         {subItems.map((sub) => (
                           <li key={sub}>
-                            <a
-                              href="#"
-                              onClick={() => setOpen(false)}
+                            <Link
+                              href={getSubcategoryPath(item, sub)}
+                              onClick={() => {
+                                setActive(item)
+                                setOpen(false)
+                              }}
                               className="block py-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 hover:text-realty"
                             >
                               {sub}
-                            </a>
+                            </Link>
                           </li>
                         ))}
                       </ul>
