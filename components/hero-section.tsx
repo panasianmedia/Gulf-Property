@@ -101,7 +101,7 @@ export function HeroSection() {
             </div>
           </div>
           <ul className="divide-y divide-border">
-            {latestNews.slice(0, 4).map((a) => (
+            {rightLeads.slice(0, 4).map((a) => (
               <li key={a.id} className="py-3 first:pt-0">
                 <Link href={`/articles/${a.slug}`} className="group flex gap-3">
                   <div className="relative aspect-video w-28 shrink-0">
