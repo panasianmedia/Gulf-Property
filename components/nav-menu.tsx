@@ -4,8 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Menu, Search, X, Bell, ChevronDown } from "lucide-react"
-import { navItems } from "@/lib/news-data"
-import { siteConfig } from "@/lib/site-config"
+import { navItems, siteConfig } from "@/lib/site-config"
 
 import Logo from "../public/images/Gulf Property.png"
 import SubscribeAd from "../public/images/magazine.png"
@@ -15,9 +14,9 @@ const navDropdowns: Record<string, string[]> = {
   Property: ["Residential", "Commercial", "Hospitality", "Retail", "Logistics", "Tourism"],
   UAE: ["Abu Dhabi", "Dubai", "Ras Al Khaimah", "Sharjah"],
   World: ["GCC", "Middle East", "Asia", "Europe", "Americas", "Africa"],
-  Archives: ["E-Zine"],
+  Archives: ["E-Zine", "Earlier Reads"],
   // Legacy / Alternate spelling fallback
-  Archive: ["E-Zine"],
+  Archive: ["E-Zine", "Earlier Reads"],
 }
 
 // Route Helper Functions

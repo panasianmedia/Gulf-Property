@@ -1,8 +1,9 @@
 import Link from "next/link"
 import { CategoryBadge } from "@/components/category-badge"
-import { realtyBytes, timeAgo } from "@/lib/news-data"
+import { timeAgo } from "@/lib/utils"
+import type { ArticleUI } from "@/components/CategoryLayout"
 
-export function RealtyBytes() {
+export function RealtyBytes({ articles }: { articles: ArticleUI[] }) {
   return (
     <section 
       aria-label="Realty Bytes" 
@@ -20,7 +21,7 @@ export function RealtyBytes() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {realtyBytes.map((a) => (
+          {articles.map((a) => (
             <Link
               key={a.id}
               href={`/articles/${a.slug}`}

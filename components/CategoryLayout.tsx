@@ -3,9 +3,9 @@
 import { Suspense } from "react"
 import Link from "next/link"
 import { CategoryBadge } from "@/components/category-badge"
-import { formatDate, timeAgo } from "@/lib/news-data"
+import { formatDate, timeAgo } from "@/lib/utils"
 
-export interface Article {
+export interface ArticleUI {
   id: string
   title: string
   slug: string
@@ -17,35 +17,31 @@ export interface Article {
   bullets?: string[]
 }
 
-interface PropertyCategoryLayoutProps {
-  categoryTitle: string // e.g., "Residential", "Commercial", etc.
-  leadStory: Article // 1 Main Story
-  topStories: Article[] // 4 Top Stories
-  latestArticles: Article[] // 6 Latest Articles
-  opinionArticles: Article[] // 3 Market Insights
-  spotlightArticles: Article[] // 4 Sector Spotlight Articles
-  section5Title?: string // Section 5 Title
+interface UniversalCategoryLayoutProps {
+  parentCategory: string       // "Property", "UAE", "World"
+  subCategoryTitle: string     // "Residential", "Dubai", "GCC"
+  subCategoriesList: string[]   // ["Residential", "Commercial", "Hospitality", ...]
+  leadStory: ArticleUI         // 1 Main Story
+  topStories: ArticleUI[]      // 4 Top Stories
+  latestArticles: ArticleUI[]  // 6 Latest Articles
+  opinionArticles: ArticleUI[] // 3 Market Insights
+  spotlightArticles: ArticleUI[] // 4 Spotlight Articles
+  section5Title?: string
 }
 
-// Subcategories list (No "All Property")
-const PROPERTY_SUB_CATEGORIES = [
-  "Residential",
-  "Commercial",
-  "Hospitality",
-  "Retail",
-  "Logistics",
-  "Tourism",
-]
-
-function PropertyCategoryContent({
-  categoryTitle,
+function UniversalCategoryContent({
+  parentCategory,
+  subCategoryTitle,
+  subCategoriesList = [],
   leadStory,
   topStories,
   latestArticles,
   opinionArticles,
   spotlightArticles,
-  section5Title = "Sector Spotlight",
-}: PropertyCategoryLayoutProps) {
+  section5Title = "Spotlight",
+}: UniversalCategoryLayoutProps) {
+  const parentSlug = parentCategory.toLowerCase().replace(/\s+/g, "-")
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* ----------------- CATEGORY HEADER & SUB-NAV ----------------- */}
@@ -56,22 +52,23 @@ function PropertyCategoryContent({
               <div className="flex items-center gap-2">
                 <span className="h-4 w-4 bg-realty" aria-hidden />
                 <span className="text-xs font-bold uppercase tracking-widest text-realty">
-                  Property Sector
+                  {parentCategory} Coverage
                 </span>
               </div>
               <h1 className="mt-1 text-3xl font-extrabold tracking-tight md:text-5xl capitalize">
-                {categoryTitle}
+                {subCategoryTitle}
               </h1>
             </div>
 
-            {/* Sub-category Pill Navigation */}
-            <nav className="flex flex-wrap gap-2 pt-2 md:pt-0" aria-label="Property subcategories">
-              {PROPERTY_SUB_CATEGORIES.map((sub) => {
-                const isActive = sub.toLowerCase() === categoryTitle.toLowerCase()
+            {/* Dynamic Sub-category Navigation Pills */}
+            <nav className="flex flex-wrap gap-2 pt-2 md:pt-0" aria-label="Subcategories">
+              {subCategoriesList.map((sub) => {
+                const subSlug = sub.toLowerCase().replace(/\s+/g, "-")
+                const isActive = sub.toLowerCase() === subCategoryTitle.toLowerCase()
                 return (
                   <Link
                     key={sub}
-                    href={`/property/${sub.toLowerCase()}`}
+                    href={`/${parentSlug}/${subSlug}`}
                     className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
                       isActive
                         ? "bg-realty text-white"
@@ -88,16 +85,16 @@ function PropertyCategoryContent({
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8">
-        {/* ----------------- 1. MAIN STORY (1) & 2. TOP STORIES (4) ----------------- */}
+        {/* 1. MAIN STORY (1) & TOP STORIES (4) */}
         <section aria-label="Top Stories" className="mb-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             
-            {/* 1 Main Story (8 cols) */}
+            {/* 1 Main Story */}
             <div className="lg:col-span-8">
               <Link href={`/articles/${leadStory.slug}`} className="group block">
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                   <img
-                    src={leadStory.image || "/placeholder.svg"}
+                    src={leadStory.image || "/images/placeholder.svg"}
                     alt={leadStory.title}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -114,17 +111,6 @@ function PropertyCategoryContent({
                   {leadStory.content}
                 </p>
 
-                {leadStory.bullets && leadStory.bullets.length > 0 && (
-                  <ul className="mt-4 space-y-2 border-l-2 border-realty pl-4 text-sm font-medium text-foreground">
-                    {leadStory.bullets.map((bullet, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-realty">&bull;</span>
-                        <span>{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
                 <div className="mt-4 flex items-center gap-3 text-xs font-medium text-muted-foreground">
                   {leadStory.author && <span>By {leadStory.author}</span>}
                   {leadStory.author && <span>&bull;</span>}
@@ -133,11 +119,11 @@ function PropertyCategoryContent({
               </Link>
             </div>
 
-            {/* 4 Top Stories Sidebar (4 cols) */}
+            {/* 4 Top Stories */}
             <div className="flex flex-col gap-4 lg:col-span-4 lg:border-l lg:border-border lg:pl-8">
               <div className="border-b-2 border-foreground pb-2">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                  Top Stories
+                  Top Stories in {subCategoryTitle}
                 </h3>
               </div>
 
@@ -161,36 +147,23 @@ function PropertyCategoryContent({
           </div>
         </section>
 
-        {/* ----------------- ADVERTISEMENT BOX 1 (728x90 BANNER) ----------------- */}
-        <div className="my-10 flex w-full items-center justify-center border border-border bg-muted/30 py-6 text-center">
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Advertisement</span>
-            <div className="mt-1 flex h-[90px] w-full max-w-[728px] items-center justify-center bg-muted/60 text-xs font-semibold text-muted-foreground">
-              
-            </div>
-          </div>
-        </div>
-
-        {/* ----------------- 3. LATEST (6 STORIES) ----------------- */}
+        {/* 2. LATEST (6 STORIES) */}
         <section aria-label="Latest Coverage" className="mb-10">
           <div className="mb-6 flex items-center gap-2 border-b-2 border-foreground pb-2">
             <span className="h-3 w-3 bg-realty" aria-hidden />
             <h2 className="text-lg font-extrabold uppercase tracking-wide">
-              Latest {categoryTitle} Coverage
+              Latest {subCategoryTitle} Coverage
             </h2>
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {latestArticles.slice(0, 6).map((item) => (
-              <article
-                key={item.id}
-                className="flex flex-col justify-between border-b border-border pb-6 sm:border-b-0"
-              >
+              <article key={item.id} className="flex flex-col justify-between border-b border-border pb-6 sm:border-b-0">
                 <div>
                   <Link href={`/articles/${item.slug}`} className="group block">
                     <div className="relative aspect-video w-full overflow-hidden bg-muted">
                       <img
-                        src={item.image || "/placeholder.svg"}
+                        src={item.image || "/images/placeholder.svg"}
                         alt={item.title}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
@@ -214,26 +187,15 @@ function PropertyCategoryContent({
           </div>
         </section>
 
-        {/* ----------------- ADVERTISEMENT BOX 2 (728x90 BANNER) ----------------- */}
-        <div className="my-10 flex w-full items-center justify-center border border-border bg-muted/30 py-6 text-center">
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Advertisement</span>
-            <div className="mt-1 flex h-[90px] w-full max-w-[728px] items-center justify-center bg-muted/60 text-xs font-semibold text-muted-foreground">
-             
-            </div>
-          </div>
-        </div>
-
-        {/* ----------------- 4. MARKET INSIGHTS (3 STORIES + 1 AD BOX) ----------------- */}
+        {/* 3. MARKET INSIGHTS (3 STORIES) */}
         <section aria-label="Market Insights" className="mb-12 bg-muted/40 p-6 md:p-8">
           <div className="mb-6 border-b border-border pb-2">
             <span className="bg-realty px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-white">
-              Market Insights
+              Market Insights & Analysis
             </span>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {/* 3 Insight Cards */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {opinionArticles.slice(0, 3).map((item) => (
               <Link
                 key={item.id}
@@ -257,23 +219,15 @@ function PropertyCategoryContent({
                 </div>
               </Link>
             ))}
-
-            {/* 1 Integrated Vertical Ad Box (300x250) */}
-            <div className="flex flex-col items-center justify-center bg-muted/80 p-5 text-center shadow-sm">
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Advertisement</span>
-              <div className="mt-2 flex h-full w-full min-h-[180px] items-center justify-center bg-muted text-xs font-semibold text-muted-foreground">
-                
-              </div>
-            </div>
           </div>
         </section>
 
-        {/* ----------------- 5. SECTOR SPOTLIGHT (4 STORIES) ----------------- */}
+        {/* 4. SPOTLIGHT (4 STORIES) */}
         <section aria-label={section5Title} className="pt-2">
           <div className="mb-6 flex items-center gap-2 border-b-2 border-foreground pb-2">
             <span className="h-3 w-3 bg-realty" aria-hidden />
             <h2 className="text-lg font-extrabold uppercase tracking-wide">
-              {categoryTitle} Spotlight
+              {section5Title}
             </h2>
           </div>
 
@@ -283,7 +237,7 @@ function PropertyCategoryContent({
                 <Link href={`/articles/${item.slug}`}>
                   <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
                     <img
-                      src={item.image || "/placeholder.svg"}
+                      src={item.image || "/images/placeholder.svg"}
                       alt={item.title}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
@@ -302,15 +256,25 @@ function PropertyCategoryContent({
             ))}
           </div>
         </section>
+
+        {/* 5. LINK TO ARCHIVE */}
+        <div className="text-center mt-12 border-t border-border pt-8">
+          <Link
+            href={`/${parentSlug}/${subCategoryTitle.toLowerCase().replace(/\s+/g, "-")}/archive`}
+            className="inline-block px-6 py-3 bg-foreground text-background font-semibold rounded-lg hover:bg-realty hover:text-white transition-colors"
+          >
+            Explore Earlier {subCategoryTitle} Reads →
+          </Link>
+        </div>
       </main>
     </div>
   )
 }
 
-export function PropertyCategoryLayout(props: PropertyCategoryLayoutProps) {
+export function CategoryLayout(props: UniversalCategoryLayoutProps) {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading sector coverage...</div>}>
-      <PropertyCategoryContent {...props} />
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading coverage...</div>}>
+      <UniversalCategoryContent {...props} />
     </Suspense>
   )
 }

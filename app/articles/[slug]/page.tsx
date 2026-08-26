@@ -1,132 +1,120 @@
-import Link from "next/link"
-import articlesData from "@/lib/articlesdata.json"
-import {
-  spotlight,
-  leftBriefs,
-  rightLeads,
-  realtyBytes,
-  exclusiveMain,
-  exclusiveSubs,
-  constructionMain,
-  constructionCards,
-  latestNews,
-} from "@/lib/news-data"
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import { getArticleBySlug } from '@/lib/articlesdata';
 
-type Article = {
-  id: string | number
-  slug: string
-  category: string[]
-  title: string
-  image: string
-  byline: string
-  dateline: string
-  content: string
+interface PageProps {
+  params: Promise<{ slug: string }>;
 }
 
-const jsonArticles = articlesData as Article[]
+export default async function ArticlePage({ params }: PageProps) {
+  const { slug } = await params;
+  const rawArticle: any = await getArticleBySlug(slug);
 
-function normalizeCategory(category: string | string[]) {
-  return Array.isArray(category) ? category : [category]
-}
-
-function normalizeNewsArticle(article: any): Article {
-  const publishedAt = article?.published_at ?? new Date().toISOString()
-  const parsedDate = new Date(publishedAt)
-
-  return {
-    id: article?.id ?? article?.slug ?? "",
-    slug: article?.slug ?? "",
-    category: normalizeCategory(article?.category ?? "General"),
-    title: article?.title ?? "Untitled article",
-    image: article?.image_url ?? article?.image ?? "/images/placeholder.svg",
-    byline: article?.byline ?? "Gulf Property",
-    dateline: Number.isNaN(parsedDate.getTime())
-      ? "N/A"
-      : parsedDate.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
-    content: article?.content || article?.summary || "No content available yet.",
-  }
-}
-
-function asArticleCollection(value: unknown): Article[] {
-  if (Array.isArray(value)) {
-    return value.flatMap((item) => asArticleCollection(item))
+  if (!rawArticle) {
+    notFound();
   }
 
-  if (value && typeof value === "object") {
-    return [normalizeNewsArticle(value)]
+  const article = rawArticle.attributes || rawArticle;
+
+  // Extract Title
+  const title = article.Title || article.title || 'Untitled Article';
+
+  // Extract and rewrite Image URL to public domain
+  const imageObj = article.Image || article.coverImage;
+  let rawImageUrl =
+    imageObj?.formats?.large?.url ||
+    imageObj?.formats?.medium?.url ||
+    imageObj?.url ||
+    null;
+
+  let imageUrl = rawImageUrl;
+  if (imageUrl) {
+    const PUBLIC_R2_URL = 'https://pub-9d1f70c10dca4e94a9b69b8e3f8cbffd.r2.dev'; // <-- Paste your pub-xxx.r2.dev URL here
+    imageUrl = imageUrl.replace(
+      /^https:\/\/[^/]+\.r2\.cloudflarestorage\.com\/gulf-property-media/,
+      PUBLIC_R2_URL
+    );
   }
 
-  return []
-}
+  // Extract Category
+  const category = Array.isArray(article.CategorySub)
+    ? article.CategorySub[0]
+    : article.CategorySub || article.subcategory || article.category || 'General';
 
-const allArticles = [
-  ...jsonArticles.map(normalizeNewsArticle),
-  ...[
-    spotlight,
-    ...leftBriefs,
-    ...rightLeads,
-    ...realtyBytes,
-    exclusiveMain,
-    ...exclusiveSubs,
-    constructionMain,
-    ...constructionCards,
-    ...latestNews,
-  ].flatMap((entry) => asArticleCollection(entry)),
-].filter((article) => Boolean(article.slug))
+  // Extract Date
+  const dateline = article.Date || article.publishedAt || new Date().toISOString();
 
-export function generateStaticParams() {
-  return allArticles.map((article) => ({ slug: article.slug }))
-}
+  // Extract Author
+  const author = article.Author || article.author || 'Staff Report';
 
-export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  const article = allArticles.find((item) => item.slug === slug)
+  // Extract Caption / Excerpt
+  const excerpt = article.Caption || article.excerpt || '';
 
-  if (!article) {
-    return (
-      <main className="mx-auto max-w-4xl px-4 py-16">
-        <h1 className="text-3xl font-bold">Article not found</h1>
-        <p className="mt-3 text-muted-foreground">The article you are looking for does not exist.</p>
-        <Link href="/" className="mt-6 inline-block text-sm font-semibold text-realty">
-          Back to home
-        </Link>
-      </main>
-    )
-  }
+  // Render Rich Text Blocks
+  const renderContent = (content: any) => {
+    if (!content) return null;
+    if (typeof content === 'string') {
+      return <p className="whitespace-pre-line text-gray-800 leading-relaxed">{content}</p>;
+    }
+    if (Array.isArray(content)) {
+      return content.map((block: any, idx: number) => {
+        if (block.type === 'paragraph') {
+          const text = block.children?.map((c: any) => c.text).join('') || '';
+          if (!text.trim()) return null;
+          return (
+            <p key={idx} className="text-gray-800 leading-relaxed mb-4 text-base sm:text-lg">
+              {text}
+            </p>
+          );
+        }
+        return null;
+      });
+    }
+    return null;
+  };
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 text-foreground">
-      <Link href="/" className="mb-6 inline-flex text-sm font-semibold text-realty hover:underline">
-        ← Back to home
-      </Link>
-
-      <div className="mb-6 border-b-2 border-foreground pb-4">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          {article.category.map((item) => (
-            <span key={item} className="bg-realty px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-white">
-              {item}
-            </span>
-          ))}
-        </div>
-        <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-5xl">{article.title}</h1>
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-          <span>By {article.byline}</span>
-          <span>•</span>
-          <time>{article.dateline}</time>
-        </div>
+    <article className="max-w-4xl mx-auto px-4 py-10">
+      <div className="mb-4 flex items-center space-x-3">
+        <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded">
+          {category}
+        </span>
+        <span className="text-xs text-gray-500">
+          {new Date(dateline).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        </span>
+        <span className="text-xs text-gray-400">• By {author}</span>
       </div>
 
-      <img src={article.image} alt={article.title} className="h-auto max-h-[500px] w-auto max-w-full object-contain" />
+      <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-6 leading-tight">
+        {title}
+      </h1>
 
-      <article className="space-y-5 text-lg leading-8 text-muted-foreground">
-        {article.content.split("\n\n").map((paragraph, index) => (
-          <p key={index}>{paragraph}</p>
-        ))}
-      </article>
-    </main>
-  )
+      {imageUrl && (
+        <div className="relative w-full h-80 sm:h-[460px] rounded-lg overflow-hidden mb-8 bg-gray-100">
+          <Image
+            src={imageUrl}
+            alt={imageObj?.alternativeText || title}
+            fill
+            className="object-cover"
+            priority
+            unoptimized
+          />
+        </div>
+      )}
+
+      {excerpt && (
+        <p className="text-lg text-gray-600 font-medium leading-relaxed mb-6 border-l-4 border-red-600 pl-4">
+          {excerpt}
+        </p>
+      )}
+
+      <div className="prose prose-lg max-w-none text-gray-800 space-y-4">
+        {renderContent(article.Content || article.content)}
+      </div>
+    </article>
+  );
 }

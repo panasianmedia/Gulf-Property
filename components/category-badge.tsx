@@ -1,7 +1,5 @@
-import type { Category } from "@/lib/news-data"
-
 interface CategoryBadgeProps {
-  category: Category
+  category: string
   variant?: "solid" | "text" | "overlay"
   className?: string
 }

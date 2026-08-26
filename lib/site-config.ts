@@ -17,6 +17,22 @@ export const siteConfig = {
   logoHeight: 44,
 }
 
+export const navItems = [
+  "Home",
+  "Property",
+  "Construction",
+  "UAE",
+  "World",
+  "Business",
+  "Archives",
+] as const
+
+export const navFooterItems = [
+  "Residential", "Commercial", "Construction", "Abu Dhabi", "Dubai", "Ras Al Khaimah", "Sharjah",
+  "GCC", "Middle East", "Asia", "Europe", "Americas", "Africa", "Business", "Spotlight",
+  "Sustainability", "Realty Bytes", "Lead", "E-zine", "Earlier Reads", "About us", "Advertise", "Contact",
+] as const
+
 export type SocialPlatform = "instagram" | "facebook" | "linkedin"
 
 export type SocialLink = {

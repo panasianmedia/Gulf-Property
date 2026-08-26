@@ -3,9 +3,8 @@
 import Image from "next/image"
 
 
-import { navFooterItems } from "@/lib/news-data"
 import { SocialLinks } from "@/components/social-links"
-import { siteConfig } from "@/lib/site-config"
+import { navFooterItems, siteConfig } from "@/lib/site-config"
 import Logo from "../public/images/Gulf Property.png"
 
 export function SiteFooter() {
