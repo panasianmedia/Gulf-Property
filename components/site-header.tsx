@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react"
 import { MortgageTicker } from "@/components/mortgage-ticker"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { siteConfig } from "@/lib/site-config"
+import type { UIArticle } from "@/lib/articlesdata"
 
 import Logo from "../public/images/Gulf Property.png"
 import SubscribeAd from "../public/images/magazine.png"
@@ -16,6 +17,9 @@ export function SiteHeader() {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [submitted, setSubmitted] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchSuggestions, setSearchSuggestions] = useState<UIArticle[]>([])
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const emailInputRef = useRef<HTMLInputElement>(null)
 
   const resetState = () => {
@@ -50,6 +54,31 @@ export function SiteHeader() {
     }
   }, [isOpen])
 
+  useEffect(() => {
+    const query = searchQuery.trim()
+    if (!query) {
+      setSearchSuggestions([])
+      return
+    }
+
+    const controller = new AbortController()
+    const timeout = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        })
+        if (response.ok) setSearchSuggestions(await response.json())
+      } catch (error) {
+        if ((error as DOMException).name !== "AbortError") setSearchSuggestions([])
+      }
+    }, 180)
+
+    return () => {
+      window.clearTimeout(timeout)
+      controller.abort()
+    }
+  }, [searchQuery])
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const trimmedEmail = email.trim()
@@ -69,7 +98,7 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="border-b border-border bg-background text-foreground transition-colors">
+      <header className="relative z-[100] border-b border-border bg-background text-foreground transition-colors">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 md:py-5">
           <a href="/" className="flex shrink-0 items-center">
             <Image
@@ -83,13 +112,32 @@ export function SiteHeader() {
           </a>
 
           <div className="hidden flex-1 justify-center px-6 lg:flex">
-            <div className="relative w-full max-w-md">
+            <div className="relative z-[110] w-full max-w-md">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => window.setTimeout(() => setIsSearchFocused(false), 150)}
                 placeholder="Search stories, markets, developers..."
                 className="w-full border border-input bg-muted py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:bg-background focus:ring-1 focus:ring-realty"
               />
+              {isSearchFocused && searchQuery.trim() && searchSuggestions.length > 0 && (
+                <ul className="absolute left-0 right-0 top-full z-[9999] mt-1 overflow-hidden border border-border bg-background text-foreground shadow-2xl">
+                  {searchSuggestions.map((article) => (
+                    <li key={article.id}>
+                      <a
+                        href={`/articles/${article.slug}`}
+                        className="block border-b border-border px-4 py-3 text-sm text-foreground last:border-b-0 hover:bg-muted"
+                      >
+                        <span className="block font-semibold line-clamp-2">{article.title}</span>
+                        <span className="mt-1 block text-xs text-muted-foreground">{article.category}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 

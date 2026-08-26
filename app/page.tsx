@@ -26,19 +26,21 @@ export default async function HomePage() {
       <HeroSection
         lead={leadArticle}
         breaking={breakingArticles}
-        trending={trendingArticles}
-        highlights={highlightsArticles}
+        exclusive={exclusiveArticles}
+        latest={latestArticles}
       />
 
       {/* 2. Realty Bytes */}
       <RealtyBytes articles={realtyBytesArticles} />
 
       {/* 3. Exclusive Section */}
-      <ExclusiveSection articles={exclusiveArticles} />
+      <ExclusiveSection
+        trending={trendingArticles}
+      />
 
       {/* 4. Construction Latest */}
       <ConstructionLatest
-        latest={latestArticles}
+        highlights={highlightsArticles}
         megaprojects={megaprojectsArticles}
       />
     </main>

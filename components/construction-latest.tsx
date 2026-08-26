@@ -4,11 +4,11 @@ import { formatDate, timeAgo } from "@/lib/utils"
 import type { ArticleUI } from "@/components/CategoryLayout"
 
 interface ConstructionLatestProps {
-  latest: ArticleUI[]
+  highlights: ArticleUI[]
   megaprojects: ArticleUI[]
 }
 
-export function ConstructionLatest({ latest, megaprojects }: ConstructionLatestProps) {
+export function ConstructionLatest({ highlights, megaprojects }: ConstructionLatestProps) {
   const [constructionMain, ...constructionCards] = megaprojects
   return (
     <section aria-label="Construction and latest news" className="bg-background py-10 text-foreground transition-colors">
@@ -96,7 +96,7 @@ export function ConstructionLatest({ latest, megaprojects }: ConstructionLatestP
               </div>
 
               <ul className="divide-y divide-border">
-                {latest.map((a, idx) => (
+                {highlights.map((a, idx) => (
   <li key={`${a.id || a.slug}-${idx}`}>
                     <Link href={`/articles/${a.slug}`} className="group flex gap-3 px-4 py-3 hover:bg-muted/60 transition-colors">
                       <time className="shrink-0 pt-0.5 text-[11px] font-bold tabular-nums text-realty">

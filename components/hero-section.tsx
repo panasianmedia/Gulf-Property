@@ -1,24 +1,26 @@
 import Link from "next/link"
 import { CategoryBadge } from "@/components/category-badge"
 import { formatDate, timeAgo } from "@/lib/utils"
+import { homeSubSpanLabels } from "@/lib/site-config"
 import type { ArticleUI } from "@/components/CategoryLayout"
 
 interface HeroSectionProps {
   lead: ArticleUI | null
   breaking: ArticleUI[]
-  trending: ArticleUI[]
-  highlights: ArticleUI[]
+  exclusive: ArticleUI[]
+  latest: ArticleUI[]
 }
 
-export function HeroSection({ lead, breaking, trending, highlights }: HeroSectionProps) {
-  const tickerItems = [...breaking, ...trending].slice(0, 5)
-  const secondaryLeads = highlights.slice(0, 4)
+export function HeroSection({ lead, breaking, exclusive, latest }: HeroSectionProps) {
+  const tickerItems = [...breaking].slice(0, 5)
+  const secondaryLeads = latest.slice(0, 4)
+  
 
   return (
     <section aria-label="Top stories" className="border-b border-border bg-background text-foreground transition-colors">
       <div className="py-2 flex min-w-0 flex-1 items-center gap-3 px-13">
         <span className="shrink-0 bg-realty px-2 py-0.5 text-[10px] text-white font-bold uppercase tracking-wider">
-          Breaking
+          {homeSubSpanLabels.breaking}
         </span>
         <div className="relative min-w-0 flex-1 overflow-hidden">
           <div className="flex animate-[ticker_38s_linear_infinite] whitespace-nowrap gap-8 will-change-transform">
@@ -45,11 +47,11 @@ export function HeroSection({ lead, breaking, trending, highlights }: HeroSectio
           <div className="mb-3 flex items-center gap-2 border-b-2 border-foreground pb-2">
             <span className="h-3 w-3 bg-realty" aria-hidden />
             <span className="bg-realty px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-white">
-              Exclusive
+              {homeSubSpanLabels.trending}
             </span>
           </div>
           <ul className="divide-y divide-border">
-            {breaking.map((a) => (
+            {exclusive.map((a) => (
               <li key={a.id} className="py-3 first:pt-0">
                 <Link href={`/articles/${a.slug}`} className="group block">
                   <CategoryBadge category={a.category} />
@@ -98,7 +100,7 @@ export function HeroSection({ lead, breaking, trending, highlights }: HeroSectio
               {/* Dynamic Latest News Header Box */}
               <div className="w-full flex items-center gap-2 border-b border-border bg-foreground text-background dark:bg-card dark:text-foreground px-4 py-2 transition-colors">
                 <span className="h-3 w-3 bg-realty" aria-hidden />
-                <h2 className="text-sm font-bold uppercase tracking-wide">Latest News</h2>
+                <h2 className="text-sm font-bold uppercase tracking-wide">{homeSubSpanLabels.highlights}</h2>
                 <span className="ml-auto flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-80">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-realty" aria-hidden />
                   Live

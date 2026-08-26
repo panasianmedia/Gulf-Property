@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getArchiveArticles } from '@/lib/articlesdata'
+import { getArchiveArticles, mapStrapiArticleToUI } from '@/lib/articlesdata'
 
 interface PageProps {
   params: Promise<{ category: string; subcategory: string }>
@@ -30,16 +30,21 @@ export default async function ArchivePage({ params, searchParams }: PageProps) {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {result.articles.map((article) => (
             <article key={article.id} className="border-b border-border pb-6">
-              {article.coverImage?.url && (
-                <img src={article.coverImage.url} alt={article.title} className="mb-4 aspect-video w-full object-cover" />
-              )}
-              <time className="text-xs text-muted-foreground">
-                {new Date(article.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </time>
-              <h2 className="mt-2 text-xl font-bold leading-tight">
-                <Link href={`/articles/${article.slug}`} className="hover:text-realty">{article.title}</Link>
-              </h2>
-              {article.excerpt && <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{article.excerpt}</p>}
+              {(() => {
+                const item = mapStrapiArticleToUI(article)
+                return <>
+                  {item.image !== '/images/placeholder.svg' && (
+                    <img src={item.image} alt={item.title} className="mb-4 aspect-video w-full object-cover" />
+                  )}
+                  <time className="text-xs text-muted-foreground">
+                    {new Date(item.dateline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </time>
+                  <h2 className="mt-2 text-xl font-bold leading-tight">
+                    <Link href={`/articles/${item.slug}`} className="hover:text-realty">{item.title}</Link>
+                  </h2>
+                  {item.content && <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{item.content}</p>}
+                </>
+              })()}
             </article>
           ))}
         </div>

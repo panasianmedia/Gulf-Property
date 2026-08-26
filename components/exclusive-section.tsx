@@ -1,9 +1,17 @@
 import Link from "next/link"
 import { CategoryBadge } from "@/components/category-badge"
 import { timeAgo } from "@/lib/utils"
+import { homeSubSpanLabels } from "@/lib/site-config"
 import type { ArticleUI } from "@/components/CategoryLayout"
 
-export function ExclusiveSection({ articles }: { articles: ArticleUI[] }) {
+interface ExclusiveSectionProps {
+  trending: ArticleUI[]
+}
+
+export function ExclusiveSection({ trending }: ExclusiveSectionProps) {
+  const secondaryStories = [...trending].slice(0, 2)
+  const primaryStory = [...trending].slice(2, 6)
+  
   return (
     <section 
       aria-label="Exclusive investigations" 
@@ -25,7 +33,7 @@ export function ExclusiveSection({ articles }: { articles: ArticleUI[] }) {
         {/* Section Header */}
         <div className="mb-6 flex items-center gap-3">
           <span className="bg-realty px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-white">
-            Trending Emirates
+            {homeSubSpanLabels.exclusive}
           </span>
           <h2 className="text-lg font-extrabold uppercase tracking-tight text-foreground">
             {/* Optional secondary heading */}
@@ -35,7 +43,7 @@ export function ExclusiveSection({ articles }: { articles: ArticleUI[] }) {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
           {/* 4-Box Grid (2x2 layout taking up 7 columns on desktop) */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-7">
-            {articles.slice(0, 4).map((article) => (
+            {primaryStory.map((article) => (
               <Link
                 key={article.id}
                 href={`/articles/${article.slug}`}
@@ -69,7 +77,7 @@ export function ExclusiveSection({ articles }: { articles: ArticleUI[] }) {
 
           {/* Two sub-features side by side (5 columns on desktop) */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:col-span-5 lg:grid-cols-1">
-            {articles.slice(4, 6).map((a) => (
+            {secondaryStories.map((a) => (
               <article key={a.id} className="border-t border-border pt-5 first:border-t-0 first:pt-0 lg:first:border-t-0">
                 <Link href={`/articles/${a.slug}`} className="group block">
                   <div className="relative aspect-video w-full">

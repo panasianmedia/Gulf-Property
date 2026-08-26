@@ -33,6 +33,19 @@ export const navFooterItems = [
   "Sustainability", "Realty Bytes", "Lead", "E-zine", "Earlier Reads", "About us", "Advertise", "Contact",
 ] as const
 
+// Display labels for homepage blocks keyed by HomeSub placement.
+// Update only these values when you want to rename span headers.
+export const homeSubSpanLabels = {
+  lead: "Lead",
+  breaking: "Breaking",
+  latest: "Highlights",
+  exclusive: "Trending Emirates",
+  realtyBytes: "Realty Bytes",
+  trending: "Exclusive",
+  highlights: "Latest News",
+  megaprojects: "Megaprojects",
+} as const
+
 export type SocialPlatform = "instagram" | "facebook" | "linkedin"
 
 export type SocialLink = {

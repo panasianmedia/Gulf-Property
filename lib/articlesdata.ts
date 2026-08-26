@@ -71,22 +71,128 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+function normalizeToken(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function toTokenList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => toTokenList(item));
+  }
+
+  if (value && typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    const candidate = obj.value ?? obj.name ?? obj.label ?? '';
+    return toTokenList(candidate);
+  }
+
+  return String(value || '')
+    .split(',')
+    .map((part) => normalizeToken(part.trim()))
+    .filter(Boolean);
+}
+
+const HOME_SUB_ALIASES: Record<string, string[]> = {
+  lead: ['lead', 'leadstory', 'mainstory', 'topstory'],
+  breaking: ['breaking', 'breakingnews', 'breakingstory'],
+  latest: ['latest', 'latestnews', 'lateststories'],
+  exclusive: ['exclusive', 'exclusiveinvestigations', 'exclusiveinvestigation'],
+  realtybytes: ['realtybytes', 'realtybyte'],
+  trending: ['trending', 'trend', 'trendingnews'],
+  highlights: ['highlights', 'highlight', 'latestnews'],
+  megaprojects: ['megaprojects', 'megaproject', 'megaprojectnews'],
+};
+
+const SUBCATEGORY_SLOT_ALIASES: Record<string, string[]> = {
+  lead: ['lead', 'leadstory'],
+  top: ['top', 'topstory', 'topstories'],
+  latest: ['latest', 'latestnews', 'lateststories'],
+  market: ['market', 'marketinsights', 'insights'],
+  spotlight: ['spotlight', 'featured'],
+};
+
 // -------------------------------------------------------------
 // HOMEPAGE DATA
 // -------------------------------------------------------------
+function hasPlacement(value: unknown, placement: string): boolean {
+  const placementKey = normalizeToken(placement);
+  const accepted = new Set([
+    placementKey,
+    ...(HOME_SUB_ALIASES[placementKey] || []).map(normalizeToken),
+  ]);
+
+  return toTokenList(value).some((token) => accepted.has(token));
+}
+
+function hasSubcategory(value: unknown, subcategory: string): boolean {
+  const target = normalizeToken(subcategory);
+  return toTokenList(value).some((token) => token === target);
+}
+
+function hasSubcategorySlot(value: unknown, slot: string): boolean {
+  const slotKey = normalizeToken(slot);
+  const accepted = new Set([
+    slotKey,
+    ...(SUBCATEGORY_SLOT_ALIASES[slotKey] || []).map(normalizeToken),
+  ]);
+
+  return toTokenList(value).some((token) => accepted.has(token));
+}
+
 async function fetchHomeBlock(placement: string, limit: number): Promise<Article[]> {
   try {
+    const pageSize = 100;
+    const maxPages = 20;
+    const matches: Article[] = [];
+    const seenIds = new Set<number>();
+
+    for (let page = 1; page <= maxPages && matches.length < limit; page += 1) {
+      const res = await fetch(
+        `${STRAPI_URL}/api/articles?sort=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
+        { next: { revalidate: 0 } }
+      );
+
+      if (!res.ok) break;
+      const data = await res.json();
+      const rows: Article[] = data.data || [];
+
+      for (const item of rows) {
+        if (seenIds.has(item.id)) continue;
+        seenIds.add(item.id);
+
+        const homePlacement = ((item as any).attributes || item).HomeSub;
+        const isBreaking = hasPlacement(homePlacement, 'breaking');
+        if (hasPlacement(homePlacement, placement) && !(placement === 'exclusive' && isBreaking)) {
+          matches.push(item);
+          if (matches.length >= limit) break;
+        }
+      }
+
+      const pageCount = data?.meta?.pagination?.pageCount || 1;
+      if (!rows.length || page >= pageCount) break;
+    }
+
+    return matches.slice(0, limit);
+  } catch (error) {
+    console.error(`Error fetching home placement [${placement}]:`, error);
+    return [];
+  }
+}
+
+export async function searchArticles(query: string): Promise<UIArticle[]> {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) return [];
+
+  try {
     const res = await fetch(
-      `${STRAPI_URL}/api/articles?filters[HomeSub][$containsi]=${encodeURIComponent(
-        placement
-      )}&sort=publishedAt:desc&pagination[limit]=${limit}&populate=*`,
+      `${STRAPI_URL}/api/articles?filters[Title][$containsi]=${encodeURIComponent(trimmedQuery)}&sort=publishedAt:desc&pagination[limit]=5&populate=*`,
       { next: { revalidate: 0 } }
     );
     if (!res.ok) return [];
     const data = await res.json();
-    return data.data || [];
+    return (data.data || []).slice(0, 5).map(mapStrapiArticleToUI);
   } catch (error) {
-    console.error(`Error fetching home placement [${placement}]:`, error);
+    console.error(`Error searching articles for [${trimmedQuery}]:`, error);
     return [];
   }
 }
@@ -112,11 +218,13 @@ export async function getHomePageData() {
     fetchHomeBlock('megaprojects', 4),
   ]);
 
+  const breakingIds = new Set(breaking.map((article) => article.id));
+
   return {
     lead: lead[0] || null,
     breaking,
     latest,
-    exclusive,
+    exclusive: exclusive.filter((article) => !breakingIds.has(article.id)),
     realtyBytes,
     trending,
     highlights,
@@ -129,17 +237,39 @@ export async function getHomePageData() {
 // -------------------------------------------------------------
 async function fetchSubcategorySlot(subcategory: string, slot: string, limit: number): Promise<Article[]> {
   try {
-    const res = await fetch(
-      `${STRAPI_URL}/api/articles?filters[CategorySub][$containsi]=${encodeURIComponent(
-        subcategory
-      )}&filters[SubCategorySub][$containsi]=${encodeURIComponent(
-        slot
-      )}&sort=publishedAt:desc&pagination[limit]=${limit}&populate=*`,
-      { next: { revalidate: 0 } }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || [];
+    const pageSize = 100;
+    const maxPages = 10;
+    const matches: Article[] = [];
+    const seenIds = new Set<number>();
+
+    for (let page = 1; page <= maxPages && matches.length < limit; page += 1) {
+      const res = await fetch(
+        `${STRAPI_URL}/api/articles?filters[CategorySub][$containsi]=${encodeURIComponent(
+          subcategory
+        )}&sort=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
+        { next: { revalidate: 0 } }
+      );
+
+      if (!res.ok) break;
+      const data = await res.json();
+      const rows: Article[] = data.data || [];
+
+      for (const item of rows) {
+        if (seenIds.has(item.id)) continue;
+        seenIds.add(item.id);
+
+        const article = (item as any).attributes || item;
+        if (hasSubcategory(article.CategorySub, subcategory) && hasSubcategorySlot(article.SubCategorySub, slot)) {
+          matches.push(item);
+          if (matches.length >= limit) break;
+        }
+      }
+
+      const pageCount = data?.meta?.pagination?.pageCount || 1;
+      if (!rows.length || page >= pageCount) break;
+    }
+
+    return matches.slice(0, limit);
   } catch (error) {
     console.error(`Error fetching subcategory slot [${subcategory} - ${slot}]:`, error);
     return [];
@@ -344,6 +474,7 @@ const articlesData = {
   getArchiveArticles,
   getArticleBySlug,
   mapStrapiArticleToUI,
+  searchArticles,
 };
 
 export default articlesData;
