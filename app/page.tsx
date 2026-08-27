@@ -1,5 +1,5 @@
 // app/page.tsx
-import { getHomePageData, mapStrapiArticleToUI, UIArticle } from "@/lib/articlesdata"
+import { getHomePageData, getAdvertisements, mapStrapiArticleToUI, UIArticle } from "@/lib/articlesdata"
 import { HeroSection } from "@/components/hero-section"
 import { RealtyBytes } from "@/components/realty-bytes"
 import { ExclusiveSection } from "@/components/exclusive-section"
@@ -8,7 +8,7 @@ import { ConstructionLatest } from "@/components/construction-latest"
 export const revalidate = 60 // Fresh data every 60s
 
 export default async function HomePage() {
-  const data = await getHomePageData()
+  const [data, ads] = await Promise.all([getHomePageData(), getAdvertisements()])
 
   // Map Strapi records into clean UI objects
   const leadArticle: UIArticle | null = data.lead ? mapStrapiArticleToUI(data.lead) : null
@@ -28,6 +28,7 @@ export default async function HomePage() {
         breaking={breakingArticles}
         exclusive={exclusiveArticles}
         latest={latestArticles}
+        squareAd={ads.square1}
       />
 
       {/* 2. Realty Bytes */}
@@ -36,12 +37,15 @@ export default async function HomePage() {
       {/* 3. Exclusive Section */}
       <ExclusiveSection
         trending={trendingArticles}
+        leaderboardAd={ads.rectangle1}
       />
 
       {/* 4. Construction Latest */}
       <ConstructionLatest
         highlights={highlightsArticles}
         megaprojects={megaprojectsArticles}
+        squareAd={ads.square2}
+        leaderboardAd={ads.rectangle2}
       />
     </main>
   )

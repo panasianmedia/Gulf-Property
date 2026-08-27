@@ -1,8 +1,8 @@
-import { getActiveSubcategoryData, mapStrapiArticleToUI } from "@/lib/articlesdata"
+import { getActiveSubcategoryData, getAdvertisements, mapStrapiArticleToUI } from "@/lib/articlesdata"
 import { CategoryLayout } from "@/components/CategoryLayout"
 
 export default async function ConstructionPage() {
-  const data = await getActiveSubcategoryData("Construction")
+  const [data, ads] = await Promise.all([getActiveSubcategoryData("Construction"), getAdvertisements()])
 
   return <CategoryLayout
     parentCategory="Construction"
@@ -17,5 +17,6 @@ export default async function ConstructionPage() {
     opinionArticles={data.marketInsights.map(mapStrapiArticleToUI)}
     spotlightArticles={data.spotlight.map(mapStrapiArticleToUI)}
     section5Title="Mega-Projects Spotlight"
+    ads={ads}
   />
 }

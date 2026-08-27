@@ -419,6 +419,79 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 // -------------------------------------------------------------
 
 
+// Converts private R2 endpoint URLs into the working public R2 link
+function resolveMediaUrl(rawUrl: string): string {
+  const PUBLIC_R2_URL = 'https://pub-9d1f70c10dca4e94a9b69b8e3f8cbffd.r2.dev';
+  return rawUrl.replace(
+    /^https:\/\/[^/]+\.r2\.cloudflarestorage\.com\/gulf-property-media/,
+    PUBLIC_R2_URL
+  );
+}
+
+export interface AdSlot {
+  image: string | null;
+  link: string | null;
+}
+
+export interface AdSlots {
+  square1: AdSlot;
+  square2: AdSlot;
+  rectangle1: AdSlot;
+  rectangle2: AdSlot;
+}
+
+const EMPTY_AD_SLOT: AdSlot = { image: null, link: null };
+
+function mapAdMedia(mediaObj: any): string | null {
+  if (!mediaObj) return null;
+  const rawUrl =
+    mediaObj.formats?.medium?.url ||
+    mediaObj.formats?.small?.url ||
+    mediaObj.formats?.large?.url ||
+    mediaObj.url ||
+    null;
+  return rawUrl ? resolveMediaUrl(rawUrl) : null;
+}
+
+export async function getAdvertisements(): Promise<AdSlots> {
+  try {
+    const res = await fetch(`${STRAPI_URL}/api/advertisement?populate=*`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) throw new Error(`Advertisement fetch failed: ${res.status}`);
+
+    const json = await res.json();
+    const data = json?.data?.attributes || json?.data || {};
+
+    return {
+      square1: {
+        image: mapAdMedia(data.SquareAd1),
+        link: data.SquareAdLink1 || null,
+      },
+      square2: {
+        image: mapAdMedia(data.SquareAd2),
+        link: data.SquareAdLink2 || null,
+      },
+      rectangle1: {
+        image: mapAdMedia(data.RectangularAd1),
+        link: data.RectangularAdLink1 || null,
+      },
+      rectangle2: {
+        image: mapAdMedia(data.RectangularAd2),
+        link: data.RectangularAdLink2 || null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching advertisements:', error);
+    return {
+      square1: EMPTY_AD_SLOT,
+      square2: EMPTY_AD_SLOT,
+      rectangle1: EMPTY_AD_SLOT,
+      rectangle2: EMPTY_AD_SLOT,
+    };
+  }
+}
+
 export function mapStrapiArticleToUI(a: any): UIArticle {
   const data = a?.attributes || a || {};
   const imageObj = data.Image || data.coverImage;
@@ -432,14 +505,7 @@ export function mapStrapiArticleToUI(a: any): UIArticle {
       imageObj.url ||
       imageUrl;
 
-    // Put your exact pub-xxx.r2.dev URL here (without a trailing slash)
-    const PUBLIC_R2_URL = 'https://pub-9d1f70c10dca4e94a9b69b8e3f8cbffd.r2.dev';
-
-    // Converts private endpoint URLs to the working public R2 link
-    imageUrl = rawUrl.replace(
-      /^https:\/\/[^/]+\.r2\.cloudflarestorage\.com\/gulf-property-media/,
-      PUBLIC_R2_URL
-    );
+    imageUrl = resolveMediaUrl(rawUrl);
   }
 
   let excerptText = data.Caption || '';
@@ -475,6 +541,7 @@ const articlesData = {
   getArticleBySlug,
   mapStrapiArticleToUI,
   searchArticles,
+  getAdvertisements,
 };
 
 export default articlesData;

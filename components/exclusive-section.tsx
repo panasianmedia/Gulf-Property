@@ -3,12 +3,15 @@ import { CategoryBadge } from "@/components/category-badge"
 import { timeAgo } from "@/lib/utils"
 import { homeSubSpanLabels } from "@/lib/site-config"
 import type { ArticleUI } from "@/components/CategoryLayout"
+import { AdLeaderboardBox } from "@/components/ad-box"
+import type { AdSlot } from "@/lib/articlesdata"
 
 interface ExclusiveSectionProps {
   trending: ArticleUI[]
+  leaderboardAd?: AdSlot
 }
 
-export function ExclusiveSection({ trending }: ExclusiveSectionProps) {
+export function ExclusiveSection({ trending, leaderboardAd }: ExclusiveSectionProps) {
   const secondaryStories = [...trending].slice(0, 2)
   const primaryStory = [...trending].slice(2, 6)
   
@@ -19,16 +22,7 @@ export function ExclusiveSection({ trending }: ExclusiveSectionProps) {
     >
       <div className="mx-auto max-w-7xl px-4">
         {/* Rectangular Leaderboard Advertisement Box */}
-        <div className="mb-10 flex w-full items-center justify-center border border-border bg-muted/30 py-6 text-center">
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Advertisement
-            </span>
-            <div className="mt-1 flex h-[90px] w-full max-w-[728px] items-center justify-center bg-muted/60 text-xs font-semibold text-muted-foreground">
-              728 x 90 Leaderboard Ad Box
-            </div>
-          </div>
-        </div>
+        <AdLeaderboardBox ad={leaderboardAd} className="mb-10" />
 
         {/* Section Header */}
         <div className="mb-6 flex items-center gap-3">

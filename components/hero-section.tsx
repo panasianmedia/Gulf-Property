@@ -3,15 +3,18 @@ import { CategoryBadge } from "@/components/category-badge"
 import { formatDate, timeAgo } from "@/lib/utils"
 import { homeSubSpanLabels } from "@/lib/site-config"
 import type { ArticleUI } from "@/components/CategoryLayout"
+import { AdSquareBox } from "@/components/ad-box"
+import type { AdSlot } from "@/lib/articlesdata"
 
 interface HeroSectionProps {
   lead: ArticleUI | null
   breaking: ArticleUI[]
   exclusive: ArticleUI[]
   latest: ArticleUI[]
+  squareAd?: AdSlot
 }
 
-export function HeroSection({ lead, breaking, exclusive, latest }: HeroSectionProps) {
+export function HeroSection({ lead, breaking, exclusive, latest, squareAd }: HeroSectionProps) {
   const tickerItems = [...breaking].slice(0, 5)
   const secondaryLeads = latest.slice(0, 4)
   
@@ -132,17 +135,7 @@ export function HeroSection({ lead, breaking, exclusive, latest }: HeroSectionPr
           </div>
 
           {/* Small Square Box Advertisement */}
-          <div className="mt-6 border border-border bg-muted/20 p-4 text-center">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Advertisement
-            </span>
-            <div className="mt-2 flex aspect-square w-full items-center justify-center border border-dashed border-border bg-muted/40 p-4">
-              <div className="flex flex-col items-center gap-1 text-center">
-                <span className="text-xs font-bold text-foreground">Featured Ad</span>
-                <span className="text-[10px] text-muted-foreground">250 x 250 Square Unit</span>
-              </div>
-            </div>
-          </div>
+          <AdSquareBox ad={squareAd} className="mt-6" />
         </div>
 
       </div>

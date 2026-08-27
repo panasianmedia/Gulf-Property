@@ -2,28 +2,23 @@ import Link from "next/link"
 import { CategoryBadge } from "@/components/category-badge"
 import { formatDate, timeAgo } from "@/lib/utils"
 import type { ArticleUI } from "@/components/CategoryLayout"
+import { AdSquareBox, AdLeaderboardBox } from "@/components/ad-box"
+import type { AdSlot } from "@/lib/articlesdata"
 
 interface ConstructionLatestProps {
   highlights: ArticleUI[]
   megaprojects: ArticleUI[]
+  squareAd?: AdSlot
+  leaderboardAd?: AdSlot
 }
 
-export function ConstructionLatest({ highlights, megaprojects }: ConstructionLatestProps) {
+export function ConstructionLatest({ highlights, megaprojects, squareAd, leaderboardAd }: ConstructionLatestProps) {
   const [constructionMain, ...constructionCards] = megaprojects
   return (
     <section aria-label="Construction and latest news" className="bg-background py-10 text-foreground transition-colors">
       <div className="mx-auto max-w-7xl px-4">
         {/* Rectangular Leaderboard Advertisement Box */}
-        <div className="mb-10 flex w-full items-center justify-center border border-border bg-muted/30 py-6 text-center">
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Advertisement
-            </span>
-            <div className="mt-1 flex h-[90px] w-full max-w-[728px] items-center justify-center bg-muted/60 text-xs font-semibold text-muted-foreground">
-              728 x 90 Leaderboard Ad Box
-            </div>
-          </div>
-        </div>
+        <AdLeaderboardBox ad={leaderboardAd} className="mb-10" />
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -115,17 +110,7 @@ export function ConstructionLatest({ highlights, megaprojects }: ConstructionLat
             </div>
 
             {/* Small Square Advertisement Box */}
-            <div className="mt-6 border border-border bg-muted/20 p-4 text-center">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Advertisement
-              </span>
-              <div className="mt-2 flex aspect-square w-full items-center justify-center border border-dashed border-border bg-muted/40 p-4">
-                <div className="flex flex-col items-center gap-1 text-center">
-                  <span className="text-xs font-bold text-foreground">Featured Ad</span>
-                  <span className="text-[10px] text-muted-foreground">250 x 250 Square Unit</span>
-                </div>
-              </div>
-            </div>
+            <AdSquareBox ad={squareAd} className="mt-6" />
           </aside>
         </div>
       </div>

@@ -4,6 +4,8 @@ import { Suspense } from "react"
 import Link from "next/link"
 import { CategoryBadge } from "@/components/category-badge"
 import { formatDate, timeAgo } from "@/lib/utils"
+import { AdSquareBox, AdLeaderboardBox } from "@/components/ad-box"
+import type { AdSlots } from "@/lib/articlesdata"
 
 export interface ArticleUI {
   id: string
@@ -27,6 +29,7 @@ interface UniversalCategoryLayoutProps {
   opinionArticles: ArticleUI[] // 3 Market Insights
   spotlightArticles: ArticleUI[] // 4 Spotlight Articles
   section5Title?: string
+  ads?: AdSlots
 }
 
 function UniversalCategoryContent({
@@ -39,6 +42,7 @@ function UniversalCategoryContent({
   opinionArticles,
   spotlightArticles,
   section5Title = "Spotlight",
+  ads,
 }: UniversalCategoryLayoutProps) {
   const parentSlug = parentCategory.toLowerCase().replace(/\s+/g, "-")
 
@@ -85,6 +89,9 @@ function UniversalCategoryContent({
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8">
+        {/* Rectangular Leaderboard Advertisement Box */}
+        <AdLeaderboardBox ad={ads?.rectangle1} className="mb-10" />
+
         {/* 1. MAIN STORY (1) & TOP STORIES (4) */}
         <section aria-label="Top Stories" className="mb-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -142,6 +149,9 @@ function UniversalCategoryContent({
                   </article>
                 ))}
               </div>
+
+              {/* Square Advertisement Box */}
+              <AdSquareBox ad={ads?.square1} className="mt-2" />
             </div>
 
           </div>
@@ -222,6 +232,9 @@ function UniversalCategoryContent({
           </div>
         </section>
 
+        {/* Rectangular Leaderboard Advertisement Box */}
+        <AdLeaderboardBox ad={ads?.rectangle2} className="mb-12" />
+
         {/* 4. SPOTLIGHT (4 STORIES) */}
         <section aria-label={section5Title} className="pt-2">
           <div className="mb-6 flex items-center gap-2 border-b-2 border-foreground pb-2">
@@ -255,6 +268,9 @@ function UniversalCategoryContent({
               </article>
             ))}
           </div>
+
+          {/* Square Advertisement Box */}
+          <AdSquareBox ad={ads?.square2} className="mx-auto mt-8" />
         </section>
 
         {/* 5. LINK TO ARCHIVE */}

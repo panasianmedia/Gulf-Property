@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getActiveSubcategoryData, mapStrapiArticleToUI } from "@/lib/articlesdata";
+import { getActiveSubcategoryData, getAdvertisements, mapStrapiArticleToUI } from "@/lib/articlesdata";
 import { CategoryLayout } from "@/components/CategoryLayout";
 
 // Exact dropdown categories mapping matching your Navbar
@@ -54,7 +54,10 @@ export default async function DynamicSubcategoryPage({ params }: PageProps) {
   if (!subCategoryTitle) notFound();
 
   // 1. Fetch live 18 active slot articles from Strapi
-  const rawData = await getActiveSubcategoryData(subCategoryTitle);
+  const [rawData, ads] = await Promise.all([
+    getActiveSubcategoryData(subCategoryTitle),
+    getAdvertisements(),
+  ]);
 
   // 2. Map data to UI component structure
   const leadStory = rawData.leadStory
@@ -85,6 +88,7 @@ export default async function DynamicSubcategoryPage({ params }: PageProps) {
       opinionArticles={opinionArticles}
       spotlightArticles={spotlightArticles}
       section5Title={`${subCategoryTitle} Spotlight`}
+      ads={ads}
     />
   );
 }
