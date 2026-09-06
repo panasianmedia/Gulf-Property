@@ -109,18 +109,7 @@ export function EZineArchive({ issues }: { issues: MagazineIssue[] }) {
                         Download PDF
                       </a>
                     ) : null}
-                  </div>
-
-                  <div className="flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#dfe6ef]/75">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#d5b36f]" />
-                      26 min read
-                    </span>
-                    <span className="inline-flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full border border-[#dfe6ef]/40" />
-                      {Math.max(1, featuredIssue.pages?.length ?? 8)} Pages
-                    </span>
-                  </div>
+                  </div>                
                 </div>
               </div>
 
