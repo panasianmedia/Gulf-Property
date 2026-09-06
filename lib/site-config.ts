@@ -30,7 +30,7 @@ export const navItems = [
 export const navFooterItems = [
   "Residential", "Commercial", "Construction", "Abu Dhabi", "Dubai", "Ras Al Khaimah", "Sharjah",
   "GCC", "Middle East", "Asia", "Europe", "Americas", "Africa", "Business", "Spotlight",
-  "Sustainability", "Realty Bytes", "Lead", "E-zine", "Earlier Reads", "About us", "Advertise", "Contact",
+  "Sustainability", "E-zine", "Earlier Reads", "About us", "Advertise", "Contact",
 ] as const
 
 // Display labels for homepage blocks keyed by HomeSub placement.

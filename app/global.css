@@ -49,6 +49,11 @@
 
 :root {
   color-scheme: light;
+  --flipbook-stage: #f5efe6;
+  --flipbook-shell-start: #f9f6ef;
+  --flipbook-shell-end: #f2ebdf;
+  --flipbook-highlight: rgba(255, 255, 255, 0.4);
+  --flipbook-page: #fffdf8;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -85,6 +90,11 @@
 
 .dark {
   color-scheme: dark;
+  --flipbook-stage: #1b2430;
+  --flipbook-shell-start: #202b38;
+  --flipbook-shell-end: #151d27;
+  --flipbook-highlight: rgba(255, 255, 255, 0.12);
+  --flipbook-page: #f8fafc;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -176,5 +186,245 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-\[ticker_38s_linear_infinite\] {
     animation: none;
+  }
+}
+
+.book-shell {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  min-height: 720px;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: linear-gradient(90deg, var(--flipbook-shell-start) 0%, var(--flipbook-shell-end) 100%);
+  box-shadow: inset 0 0 0 1px var(--flipbook-highlight), 0 18px 40px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: grab;
+  user-select: none;
+  perspective: 2000px;
+}
+
+.book-shell-closed {
+  grid-template-columns: minmax(0, 560px);
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+.book-shell-closed .book-page-cover {
+  min-height: 720px;
+  border-radius: 1.5rem;
+}
+
+.book-shell.dragging {
+  cursor: grabbing;
+}
+
+.book-spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 18px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(71, 85, 105, 0.18), rgba(17, 24, 39, 0.4), rgba(71, 85, 105, 0.18));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.book-page {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-height: 720px;
+  background: var(--flipbook-page);
+  overflow: hidden;
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  transition: transform 0.2s ease;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.04);
+}
+
+.book-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.03), transparent 12%, transparent 88%, rgba(15, 23, 42, 0.04));
+}
+
+.book-page-left {
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: inset -18px 0 18px -10px rgba(15, 23, 42, 0.08);
+}
+
+.book-page-right {
+  border-left: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: inset 18px 0 18px -10px rgba(15, 23, 42, 0.08);
+}
+
+.book-page-blank {
+  background: linear-gradient(180deg, var(--flipbook-shell-start) 0%, var(--flipbook-shell-end) 100%);
+}
+
+.book-page img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(var(--book-zoom, 1));
+  transition: transform 0.2s ease;
+}
+
+.book-controls {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+
+.book-controls button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: #fff;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.book-controls button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.book-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.book-controls span {
+  min-width: 3.5rem;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.turn-left {
+  animation: pageTurnLeft 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.turn-right {
+  animation: pageTurnRight 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.page-strip {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.page-strip::-webkit-scrollbar {
+  height: 8px;
+}
+
+.page-strip::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.6);
+  border-radius: 999px;
+}
+
+.page-thumb {
+  position: relative;
+  flex: 0 0 84px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 0.75rem;
+  background: #fff;
+  overflow: hidden;
+  padding: 0;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.page-thumb:hover {
+  transform: translateY(-1px);
+  border-color: rgba(220, 38, 38, 0.5);
+}
+
+.page-thumb.active {
+  border-color: rgba(220, 38, 38, 0.9);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
+}
+
+.page-thumb img {
+  display: block;
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  object-fit: cover;
+}
+
+.page-thumb span {
+  display: block;
+  padding: 0.35rem 0.25rem 0.45rem;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+@keyframes pageTurnLeft {
+  0% {
+    transform: perspective(1800px) rotateY(0deg) translateX(0);
+    opacity: 1;
+    filter: brightness(1);
+  }
+  25% {
+    transform: perspective(1800px) rotateY(18deg) translateX(-6px);
+    opacity: 0.96;
+    filter: brightness(0.98);
+  }
+  55% {
+    transform: perspective(1800px) rotateY(42deg) translateX(-18px) scaleX(0.985);
+    opacity: 0.9;
+    filter: brightness(0.96);
+  }
+  100% {
+    transform: perspective(1800px) rotateY(0deg) translateX(0);
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@keyframes pageTurnRight {
+  0% {
+    transform: perspective(1800px) rotateY(0deg) translateX(0);
+    opacity: 1;
+    filter: brightness(1);
+  }
+  25% {
+    transform: perspective(1800px) rotateY(-18deg) translateX(6px);
+    opacity: 0.96;
+    filter: brightness(0.98);
+  }
+  55% {
+    transform: perspective(1800px) rotateY(-42deg) translateX(18px) scaleX(0.985);
+    opacity: 0.9;
+    filter: brightness(0.96);
+  }
+  100% {
+    transform: perspective(1800px) rotateY(0deg) translateX(0);
+    opacity: 1;
+    filter: brightness(1);
   }
 }

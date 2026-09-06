@@ -1,11 +1,35 @@
 "use client"
 
 import Image from "next/image"
-
+import Link from "next/link"
 
 import { SocialLinks } from "@/components/social-links"
 import { navFooterItems, siteConfig } from "@/lib/site-config"
 import Logo from "../public/images/Gulf Property.png"
+
+const footerRouteMap: Record<string, string> = {
+  Residential: "/property/residential",
+  Commercial: "/property/commercial",
+  Construction: "/construction",
+  "Abu Dhabi": "/uae/abu-dhabi",
+  Dubai: "/uae/dubai",
+  "Ras Al Khaimah": "/uae/ras-al-khaimah",
+  Sharjah: "/uae/sharjah",
+  GCC: "/world/gcc",
+  "Middle East": "/world/middle-east",
+  Asia: "/world/asia",
+  Europe: "/world/europe",
+  Americas: "/world/americas",
+  Africa: "/world/africa",
+  Business: "/business",
+  Spotlight: "/spotlight",
+  Sustainability: "/sustainability",
+  "E-zine": "/archives/e-zine",
+  "Earlier Reads": "/archives/earlier-reads",
+  "About us": "/about",
+  Advertise: "/advertise",
+  Contact: "/contact",
+}
 
 export function SiteFooter() {
   return (
@@ -26,12 +50,12 @@ export function SiteFooter() {
             <ul className="flex flex-wrap gap-x-5 gap-y-2">
               {navFooterItems.map((item) => (
                 <li key={item}>
-                  <a
-                    href="#"
+                  <Link
+                    href={footerRouteMap[item] ?? "/"}
                     className="text-xs font-semibold uppercase tracking-wide text-gray-300 hover:text-red-500 transition-colors"
                   >
                     {item}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

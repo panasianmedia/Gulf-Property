@@ -19,6 +19,11 @@ const navDropdowns: Record<string, string[]> = {
   Archive: ["E-Zine", "Earlier Reads"],
 }
 
+const archiveSubcategoryPaths: Record<string, string> = {
+  "E-Zine": "/archives/e-zine",
+  "Earlier Reads": "/archives/earlier-reads",
+}
+
 // Route Helper Functions
 const getCategoryPath = (item: string) => {
   if (item === "Home") return "/"
@@ -26,6 +31,10 @@ const getCategoryPath = (item: string) => {
 }
 
 const getSubcategoryPath = (parentItem: string, subItem: string) => {
+  if (parentItem === "Archives") {
+    return archiveSubcategoryPaths[subItem] || "/archives"
+  }
+
   const parentSlug = parentItem.toLowerCase().replace(/\s+/g, "-")
   const subSlug = subItem.toLowerCase().replace(/\s+/g, "-")
   return `/${parentSlug}/${subSlug}`
