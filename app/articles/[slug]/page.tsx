@@ -51,6 +51,24 @@ export default async function ArticlePage({ params }: PageProps) {
   const excerpt = article.Caption || article.excerpt || '';
 
   // Render Rich Text Blocks
+  // Renders a single Strapi rich-text node, preserving bold/italic/underline/etc.
+  const renderInline = (node: any, key: number) => {
+    let el: React.ReactNode = node.text ?? '';
+    if (node.code) el = <code key={`code-${key}`}>{el}</code>;
+    if (node.bold) el = <strong key={`b-${key}`}>{el}</strong>;
+    if (node.italic) el = <em key={`i-${key}`}>{el}</em>;
+    if (node.underline) el = <u key={`u-${key}`}>{el}</u>;
+    if (node.strikethrough) el = <s key={`s-${key}`}>{el}</s>;
+    if (node.type === 'link' && node.url) {
+      el = (
+        <a key={`a-${key}`} href={node.url} target="_blank" rel="noopener noreferrer" className="text-realty underline">
+          {node.children?.map((c: any, i: number) => renderInline(c, i)) ?? el}
+        </a>
+      );
+    }
+    return <span key={key}>{el}</span>;
+  };
+
   const renderContent = (content: any) => {
     if (!content) return null;
     if (typeof content === 'string') {
@@ -58,13 +76,40 @@ export default async function ArticlePage({ params }: PageProps) {
     }
     if (Array.isArray(content)) {
       return content.map((block: any, idx: number) => {
+        const children = block.children?.map((c: any, i: number) => renderInline(c, i)) ?? null;
+        const hasText = block.children?.some((c: any) => (c.text || '').trim());
+
         if (block.type === 'paragraph') {
-          const text = block.children?.map((c: any) => c.text).join('') || '';
-          if (!text.trim()) return null;
+          if (!hasText) return null;
           return (
             <p key={idx} className="mb-4 text-base leading-relaxed text-foreground sm:text-lg">
-              {text}
+              {children}
             </p>
+          );
+        }
+        if (block.type === 'heading') {
+          const Tag = `h${block.level || 2}` as React.ElementType;
+          return (
+            <Tag key={idx} className="mb-4 mt-6 font-bold text-foreground">
+              {children}
+            </Tag>
+          );
+        }
+        if (block.type === 'list') {
+          const ListTag = block.format === 'ordered' ? 'ol' : 'ul';
+          return (
+            <ListTag key={idx} className="mb-4 ml-6 list-outside space-y-1 text-foreground">
+              {block.children?.map((item: any, i: number) => (
+                <li key={i}>{item.children?.map((c: any, j: number) => renderInline(c, j))}</li>
+              ))}
+            </ListTag>
+          );
+        }
+        if (block.type === 'quote') {
+          return (
+            <blockquote key={idx} className="mb-4 border-l-4 border-red-600 pl-4 italic text-muted-foreground">
+              {children}
+            </blockquote>
           );
         }
         return null;

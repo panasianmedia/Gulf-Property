@@ -266,7 +266,7 @@ async function fetchHomeBlock(placement: string, limit: number): Promise<Article
     const matches: Article[] = [];
     const seenIds = new Set<number>();
 
-    for (let page = 1; page <= maxPages && matches.length < limit; page += 1) {
+    for (let page = 1; page <= maxPages; page += 1) {
       const res = await fetch(
         `${STRAPI_URL}/api/articles?sort=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
         { next: { revalidate: 0 }, cache: 'no-store' }
@@ -355,14 +355,14 @@ export async function getHomePageData() {
 // -------------------------------------------------------------
 // SUBCATEGORY DATA
 // -------------------------------------------------------------
-async function fetchSubcategorySlot(subcategory: string, slot: string, limit: number): Promise<Article[]> {
+async function fetchSubcategoryArticles(subcategory: string): Promise<Article[]> {
   try {
     const pageSize = 100;
     const maxPages = 10;
     const matches: Article[] = [];
     const seenIds = new Set<number>();
 
-    for (let page = 1; page <= maxPages && matches.length < limit; page += 1) {
+    for (let page = 1; page <= maxPages; page += 1) {
       const res = await fetch(
         `${STRAPI_URL}/api/articles?filters[CategorySub][$containsi]=${encodeURIComponent(
           subcategory
@@ -379,9 +379,8 @@ async function fetchSubcategorySlot(subcategory: string, slot: string, limit: nu
         seenIds.add(item.id);
 
         const article = (item as any).attributes || item;
-        if (hasSubcategory(article.CategorySub, subcategory) && hasSubcategorySlot(article.SubCategorySub, slot)) {
+        if (hasSubcategory(article.CategorySub, subcategory)) {
           matches.push(item);
-          if (matches.length >= limit) break;
         }
       }
 
@@ -389,21 +388,26 @@ async function fetchSubcategorySlot(subcategory: string, slot: string, limit: nu
       if (!rows.length || page >= pageCount) break;
     }
 
-    return matches.slice(0, limit);
+    return matches;
   } catch (error) {
-    console.error(`Error fetching subcategory slot [${subcategory} - ${slot}]:`, error);
+    console.error(`Error fetching subcategory articles [${subcategory}]:`, error);
     return [];
   }
 }
 
 export async function getActiveSubcategoryData(subcategory: string) {
-  const [lead, topStories, latest, marketInsights, spotlight] = await Promise.all([
-    fetchSubcategorySlot(subcategory, 'lead', 1),
-    fetchSubcategorySlot(subcategory, 'top', 4),
-    fetchSubcategorySlot(subcategory, 'latest', 6),
-    fetchSubcategorySlot(subcategory, 'market', 3),
-    fetchSubcategorySlot(subcategory, 'spotlight', 4),
-  ]);
+  const articles = await fetchSubcategoryArticles(subcategory);
+  const bySlot = (slot: string, limit: number) =>
+    articles.filter((article) => {
+      const data = (article as any).attributes || article;
+      return hasSubcategorySlot(data.SubCategorySub, slot);
+    }).slice(0, limit);
+
+  const lead = bySlot('lead', 1);
+  const topStories = bySlot('top', 4);
+  const latest = bySlot('latest', 6);
+  const marketInsights = bySlot('market', 3);
+  const spotlight = bySlot('spotlight', 4);
 
   return {
     leadStory: lead[0] || null,

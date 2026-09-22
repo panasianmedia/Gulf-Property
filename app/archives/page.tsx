@@ -26,6 +26,15 @@ export default function ArchivesLandingPage() {
           <h2 className="mt-3 text-3xl font-black">Earlier Reads</h2>
           <p className="mt-3 text-muted-foreground">Browse older stories, reports and editorial features from previous coverage.</p>
         </Link>
+
+        <Link
+          href="/archives/own-your-story"
+          className="group rounded-3xl border border-border bg-card p-6 transition-shadow hover:shadow-xl"
+        >
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-realty">Community</p>
+          <h2 className="mt-3 text-3xl font-black">Own Your Story</h2>
+          <p className="mt-3 text-muted-foreground">Real stories from our readers about their property journey, in their own words.</p>
+        </Link>
       </div>
     </main>
   )

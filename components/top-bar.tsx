@@ -155,6 +155,12 @@ export function TopBar() {
         <Link href="/advertise" className="transition-colors hover:text-white">
           Advertise
         </Link>
+        <Link href="/privacy-policy" className="transition-colors hover:text-white">
+          Privacy
+        </Link>
+        <Link href="/terms-and-conditions" className="transition-colors hover:text-white">
+          Terms
+        </Link>
         <Link href="/contact" className="transition-colors hover:text-white">
           Contact
         </Link>

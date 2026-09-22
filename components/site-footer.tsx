@@ -9,25 +9,19 @@ import Logo from "../public/images/Gulf Property.png"
 
 const footerRouteMap: Record<string, string> = {
   Residential: "/property/residential",
-  Commercial: "/property/commercial",
   Construction: "/construction",
   "Abu Dhabi": "/uae/abu-dhabi",
   Dubai: "/uae/dubai",
   "Ras Al Khaimah": "/uae/ras-al-khaimah",
   Sharjah: "/uae/sharjah",
-  GCC: "/world/gcc",
-  "Middle East": "/world/middle-east",
-  Asia: "/world/asia",
-  Europe: "/world/europe",
-  Americas: "/world/americas",
-  Africa: "/world/africa",
   Business: "/business",
   Spotlight: "/spotlight",
   Sustainability: "/sustainability",
   "E-zine": "/archives/e-zine",
-  "Earlier Reads": "/archives/earlier-reads",
   "About us": "/about",
   Advertise: "/advertise",
+  "Privacy Policy": "/privacy-policy",
+  "Terms and Conditions": "/terms-and-conditions",
   Contact: "/contact",
 }
 

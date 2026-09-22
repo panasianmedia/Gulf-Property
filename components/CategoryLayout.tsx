@@ -245,7 +245,7 @@ function UniversalCategoryContent({
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {spotlightArticles.slice(0, 4).map((item) => (
+            {spotlightArticles.slice(0, 3).map((item) => (
               <article key={item.id} className="group flex flex-col justify-between border-b border-border pb-6 sm:border-b-0">
                 <Link href={`/articles/${item.slug}`}>
                   <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
@@ -267,10 +267,9 @@ function UniversalCategoryContent({
                 </time>
               </article>
             ))}
-          </div>
 
-          {/* Square Advertisement Box */}
-          <AdSquareBox ad={ads?.square2} className="mx-auto mt-8" />
+            <AdSquareBox ad={ads?.square2} className="h-full" />
+          </div>
         </section>
 
         {/* 5. LINK TO ARCHIVE */}

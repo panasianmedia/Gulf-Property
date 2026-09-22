@@ -8,11 +8,7 @@ const CATEGORY_MAP: Record<string, { title: string; subcategories: Record<string
     title: "Property",
     subcategories: {
       residential: "Residential",
-      commercial: "Commercial",
       hospitality: "Hospitality",
-      retail: "Retail",
-      logistics: "Logistics",
-      tourism: "Tourism",
     },
   },
   uae: {

@@ -11,17 +11,16 @@ import SubscribeAd from "../public/images/magazine.png"
 
 // Dropdown Items Mapping
 const navDropdowns: Record<string, string[]> = {
-  Property: ["Residential", "Commercial", "Hospitality", "Retail", "Logistics", "Tourism"],
+  Property: ["Residential", "Hospitality"],
   UAE: ["Abu Dhabi", "Dubai", "Ras Al Khaimah", "Sharjah"],
-  World: ["GCC", "Middle East", "Asia", "Europe", "Americas", "Africa"],
-  Archives: ["E-Zine", "Earlier Reads"],
+  Archives: ["E-Zine", "Own Your Story"],
   // Legacy / Alternate spelling fallback
-  Archive: ["E-Zine", "Earlier Reads"],
+  Archive: ["E-Zine", "Own Your Story"],
 }
 
 const archiveSubcategoryPaths: Record<string, string> = {
   "E-Zine": "/archives/e-zine",
-  "Earlier Reads": "/archives/earlier-reads",
+  "Own Your Story": "/archives/own-your-story",
 }
 
 // Route Helper Functions
