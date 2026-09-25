@@ -1,6 +1,45 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { getArticleBySlug } from '@/lib/articlesdata';
+import { SocialShare } from '@/components/social-share';
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const rawArticle: any = await getArticleBySlug(slug);
+  const article = rawArticle?.attributes || rawArticle;
+  const title = article?.Title || article?.title || 'Untitled Article';
+  const excerpt = article?.Caption || article?.excerpt || 'Read the latest Gulf Property coverage.';
+  const imageObj = article?.Image || article?.coverImage;
+  const rawImageUrl =
+    imageObj?.formats?.large?.url ||
+    imageObj?.formats?.medium?.url ||
+    imageObj?.url ||
+    '/images/Gulf Property.png';
+
+  const imageUrl = rawImageUrl.startsWith('http') ? rawImageUrl : `https://www.thegulfproperty.com${rawImageUrl}`;
+
+  return {
+    title: `${title} | Gulf Property`,
+    description: excerpt,
+    alternates: {
+      canonical: `https://www.thegulfproperty.com/articles/${slug}`,
+    },
+    openGraph: {
+      title: `${title} | Gulf Property`,
+      description: excerpt,
+      url: `https://www.thegulfproperty.com/articles/${slug}`,
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | Gulf Property`,
+      description: excerpt,
+      images: [imageUrl],
+    },
+  };
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -120,7 +159,7 @@ export default async function ArticlePage({ params }: PageProps) {
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-10">
-      <div className="mb-4 flex items-center space-x-3">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded">
           {category}
         </span>
@@ -132,6 +171,9 @@ export default async function ArticlePage({ params }: PageProps) {
           })}
         </span>
         <span className="text-xs text-muted-foreground">• By {author}</span>
+        <div className="ml-auto flex items-center">
+          <SocialShare title={title} description={excerpt} url={`https://www.thegulfproperty.com/articles/${slug}`} />
+        </div>
       </div>
 
       <h1 className="mb-6 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">

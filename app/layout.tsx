@@ -11,10 +11,38 @@ import './global.css'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.thegulfproperty.com'),
   title: 'Gulf Property — Real Estate Journalism, Market Data & Property Insights',
   description:
     'Gulf Property delivers high-density editorial coverage of residential, commercial, construction, luxury and PropTech real estate, plus live market data.',
   generator: 'v0.app',
+  applicationName: 'Gulf Property',
+  alternates: {
+    canonical: 'https://www.thegulfproperty.com',
+  },
+  openGraph: {
+    title: 'Gulf Property',
+    description:
+      'Real Estate Journalism, Market Data & Property Insights',
+    url: 'https://www.thegulfproperty.com',
+    siteName: 'Gulf Property',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: '/images/Gulf Property.png',
+        width: 1200,
+        height: 630,
+        alt: 'Gulf Property',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gulf Property',
+    description: 'Real Estate Journalism, Market Data & Property Insights',
+    images: ['/images/Gulf Property.png'],
+  },
   icons: {
     icon: [
       {
