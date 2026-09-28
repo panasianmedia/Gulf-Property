@@ -418,6 +418,47 @@ export async function getActiveSubcategoryData(subcategory: string) {
   };
 }
 
+// Aggregates articles across several CategorySub values (e.g. World's regions) into one feed.
+export async function getActiveRegionData(subcategories: string[]) {
+  const nested = await Promise.all(subcategories.map((subcategory) => fetchSubcategoryArticles(subcategory)));
+  const seenIds = new Set<number>();
+  const articles: Article[] = [];
+
+  for (const list of nested) {
+    for (const item of list) {
+      if (seenIds.has(item.id)) continue;
+      seenIds.add(item.id);
+      articles.push(item);
+    }
+  }
+
+  articles.sort((a, b) => {
+    const dataA = (a as any).attributes || a;
+    const dataB = (b as any).attributes || b;
+    return new Date(dataB.publishedAt || 0).getTime() - new Date(dataA.publishedAt || 0).getTime();
+  });
+
+  const bySlot = (slot: string, limit: number) =>
+    articles.filter((article) => {
+      const data = (article as any).attributes || article;
+      return hasSubcategorySlot(data.SubCategorySub, slot);
+    }).slice(0, limit);
+
+  const lead = bySlot('lead', 1);
+  const topStories = bySlot('top', 4);
+  const latest = bySlot('latest', 6);
+  const marketInsights = bySlot('market', 3);
+  const spotlight = bySlot('spotlight', 4);
+
+  return {
+    leadStory: lead[0] || null,
+    topStories,
+    latest,
+    marketInsights,
+    spotlight,
+  };
+}
+
 // -------------------------------------------------------------
 // PAST & ARCHIVE ARTICLES
 // -------------------------------------------------------------
@@ -752,6 +793,7 @@ export function mapStrapiArticleToUI(a: any): UIArticle {
 const articlesData = {
   getHomePageData,
   getActiveSubcategoryData,
+  getActiveRegionData,
   getPastArticles,
   getArchiveArticles,
   getArticleBySlug,

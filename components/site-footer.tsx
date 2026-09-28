@@ -14,6 +14,7 @@ const footerRouteMap: Record<string, string> = {
   Dubai: "/uae/dubai",
   "Ras Al Khaimah": "/uae/ras-al-khaimah",
   Sharjah: "/uae/sharjah",
+  GCC: "/gcc",
   Business: "/business",
   Spotlight: "/spotlight",
   Sustainability: "/sustainability",

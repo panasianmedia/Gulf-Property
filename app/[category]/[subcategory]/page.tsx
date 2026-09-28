@@ -23,7 +23,6 @@ const CATEGORY_MAP: Record<string, { title: string; subcategories: Record<string
   world: {
     title: "World",
     subcategories: {
-      gcc: "GCC",
       "middle-east": "Middle East",
       asia: "Asia",
       europe: "Europe",

@@ -22,13 +22,15 @@ export const navItems = [
   "Property",
   "Construction",
   "UAE",
+  "World",
+  "GCC",
   "Business",
   "Archives",
 ] as const
 
 export const navFooterItems = [
   "Residential", "Commercial", "Construction", "Abu Dhabi", "Dubai", "Ras Al Khaimah", "Sharjah",
-  "Business", "Spotlight",
+  "GCC", "Business", "Spotlight",
   "Sustainability", "E-zine", "About us", "Advertise", "Privacy Policy", "Terms and Conditions", "Contact",
 ] as const
 
