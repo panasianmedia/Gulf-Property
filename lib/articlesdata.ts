@@ -506,17 +506,33 @@ export async function getArchiveArticles({
 // SINGLE ARTICLE RESOLVER
 // -------------------------------------------------------------
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  const decodedSlug = decodeURIComponent(slug).toLowerCase().trim();
+
   try {
-    const res = await fetch(`${STRAPI_URL}/api/articles?populate=*&pagination[limit]=100`, {
-      next: { revalidate: 0 },
-      cache: 'no-store',
-    });
+    const directRes = await fetch(
+      `${STRAPI_URL}/api/articles?filters[Slug][$eqi]=${encodeURIComponent(decodedSlug)}&populate=*`,
+      { next: { revalidate: 0 }, cache: 'no-store' }
+    );
+
+    if (directRes.ok) {
+      const directJson = await directRes.json();
+      const directMatch = directJson.data?.[0];
+      if (directMatch) return directMatch;
+    }
+  } catch (error) {
+    console.error(`Error fetching article by exact slug [${slug}]:`, error);
+  }
+
+  try {
+    const res = await fetch(
+      `${STRAPI_URL}/api/articles?sort=publishedAt:desc&pagination[page]=1&pagination[pageSize]=1000&populate=*`,
+      { next: { revalidate: 0 }, cache: 'no-store' }
+    );
 
     if (!res.ok) return null;
 
     const json = await res.json();
     const articles: any[] = json.data || [];
-    const decodedSlug = decodeURIComponent(slug).toLowerCase().trim();
 
     const target = articles.find((item: any) => {
       const data = item.attributes || item;
