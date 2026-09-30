@@ -231,6 +231,12 @@ const SUBCATEGORY_SLOT_ALIASES: Record<string, string[]> = {
   spotlight: ['spotlight', 'featured'],
 };
 
+function getArticleDateTimestamp(article: Article): number {
+  const data = (article as any).attributes || article;
+  const timestamp = new Date(data.Date || data.publishedAt || 0).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
 function hasPlacement(value: unknown, placement: string): boolean {
   const placementKey = normalizeToken(placement);
   const accepted = new Set([
@@ -268,7 +274,7 @@ async function fetchHomeBlock(placement: string, limit: number): Promise<Article
 
     for (let page = 1; page <= maxPages; page += 1) {
       const res = await fetch(
-        `${STRAPI_URL}/api/articles?sort=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
+        `${STRAPI_URL}/api/articles?sort[0]=Date:desc&sort[1]=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
         { next: { revalidate: 0 }, cache: 'no-store' }
       );
 
@@ -305,7 +311,7 @@ export async function searchArticles(query: string): Promise<UIArticle[]> {
 
   try {
     const res = await fetch(
-      `${STRAPI_URL}/api/articles?filters[Title][$containsi]=${encodeURIComponent(trimmedQuery)}&sort=publishedAt:desc&pagination[limit]=5&populate=*`,
+      `${STRAPI_URL}/api/articles?filters[Title][$containsi]=${encodeURIComponent(trimmedQuery)}&sort[0]=Date:desc&sort[1]=publishedAt:desc&pagination[limit]=5&populate=*`,
       { next: { revalidate: 0 }, cache: 'no-store' }
     );
     if (!res.ok) return [];
@@ -366,7 +372,7 @@ async function fetchSubcategoryArticles(subcategory: string): Promise<Article[]>
       const res = await fetch(
         `${STRAPI_URL}/api/articles?filters[CategorySub][$containsi]=${encodeURIComponent(
           subcategory
-        )}&sort=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
+        )}&sort[0]=Date:desc&sort[1]=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
         { next: { revalidate: 0 }, cache: 'no-store' }
       );
 
@@ -432,11 +438,7 @@ export async function getActiveRegionData(subcategories: string[]) {
     }
   }
 
-  articles.sort((a, b) => {
-    const dataA = (a as any).attributes || a;
-    const dataB = (b as any).attributes || b;
-    return new Date(dataB.publishedAt || 0).getTime() - new Date(dataA.publishedAt || 0).getTime();
-  });
+  articles.sort((a, b) => getArticleDateTimestamp(b) - getArticleDateTimestamp(a));
 
   const bySlot = (slot: string, limit: number) =>
     articles.filter((article) => {
@@ -471,7 +473,7 @@ export async function getPastArticles(
     const res = await fetch(
       `${STRAPI_URL}/api/articles?filters[CategorySub][$containsi]=${encodeURIComponent(
         subcategory
-      )}&sort=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
+      )}&sort[0]=Date:desc&sort[1]=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
       { next: { revalidate: 0 }, cache: 'no-store' }
     );
 
@@ -525,7 +527,7 @@ export async function getArchiveArticles({
 
     const url = `${STRAPI_URL}/api/articles?filters[CategorySub][$containsi]=${encodeURIComponent(
       subcategory
-    )}${dateFilters}&sort=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`;
+    )}${dateFilters}&sort[0]=Date:desc&sort[1]=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`;
 
     const res = await fetch(url, { next: { revalidate: 0 }, cache: 'no-store' });
     if (!res.ok) {
