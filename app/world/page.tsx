@@ -2,10 +2,9 @@ import { getActiveRegionData, getAdvertisements, mapStrapiArticleToUI } from "@/
 import { CategoryLayout } from "@/components/CategoryLayout"
 
 const WORLD_SUBCATEGORIES = ["Middle East", "Asia", "Europe", "Americas", "Africa"]
-const WORLD_FEED_SUBCATEGORIES = ["GCC", ...WORLD_SUBCATEGORIES]
 
 export default async function WorldPage() {
-  const [data, ads] = await Promise.all([getActiveRegionData(WORLD_FEED_SUBCATEGORIES), getAdvertisements()])
+  const [data, ads] = await Promise.all([getActiveRegionData(WORLD_SUBCATEGORIES), getAdvertisements()])
 
   return <CategoryLayout
     parentCategory="World"
