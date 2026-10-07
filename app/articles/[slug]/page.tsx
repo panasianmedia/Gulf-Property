@@ -163,22 +163,31 @@ export default async function ArticlePage({ params }: PageProps) {
         <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded">
           {category}
         </span>
-        <span className="text-xs text-muted-foreground">
-          {new Date(dateline).toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </span>
-        <span className="text-xs text-muted-foreground">• By {author}</span>
-        <div className="ml-auto flex items-center">
-          <SocialShare title={title} description={excerpt} url={`https://www.thegulfproperty.com/articles/${slug}`} />
-        </div>
       </div>
 
       <h1 className="mb-6 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
         {title}
       </h1>
+
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span>
+            {new Date(dateline).toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </span>
+          <span>•</span>
+          <span>By {author}</span>
+        </div>
+
+        <SocialShare
+          title={title}
+          url={`https://www.thegulfproperty.com/articles/${slug}`}
+          className="justify-end"
+        />
+      </div>
 
       {imageUrl && (
         <div className="relative mb-8 h-80 w-full overflow-hidden rounded-lg bg-muted sm:h-[460px]">
