@@ -4,6 +4,7 @@ import { formatDate, timeAgo } from "@/lib/utils"
 import { homeSubSpanLabels } from "@/lib/site-config"
 import type { ArticleUI } from "@/components/CategoryLayout"
 import { AdSquareBox } from "@/components/ad-box"
+import { FramedImage } from "@/components/framed-image"
 import type { AdSlot } from "@/lib/articlesdata"
 
 interface HeroSectionProps {
@@ -78,7 +79,7 @@ export function HeroSection({ lead, breaking, exclusive, latest, squareAd }: Her
               <img
                 src={lead.image || "/images/placeholder.svg"}
                 alt={lead.title}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="h-auto w-full object-contain"
               />
               <div className="absolute left-0 top-0">
                 <CategoryBadge category={lead.category} variant="overlay" />
@@ -115,13 +116,11 @@ export function HeroSection({ lead, breaking, exclusive, latest, squareAd }: Her
               {secondaryLeads.map((a) => (
                 <li key={a.id} className="py-3 first:pt-0">
                   <Link href={`/articles/${a.slug}`} className="group flex gap-3">
-                    <div className="relative aspect-video w-28 shrink-0">
-                      <img
-                        src={a.image || "/images/placeholder.svg"}
-                        alt={a.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
+                    <FramedImage
+                      src={a.image || "/images/placeholder.svg"}
+                      alt={a.title}
+                      className="aspect-video w-28 shrink-0"
+                    />
                     <div className="min-w-0">
                       <CategoryBadge category={a.category} />
                       <h3 className="mt-0.5 text-sm font-bold leading-snug text-foreground line-clamp-3 group-hover:text-realty">

@@ -193,9 +193,17 @@ export default async function ArticlePage({ params }: PageProps) {
         <div className="relative mb-8 h-80 w-full overflow-hidden rounded-lg bg-muted sm:h-[460px]">
           <Image
             src={imageUrl}
+            alt=""
+            aria-hidden
+            fill
+            className="scale-125 object-cover opacity-100 blur-md"
+            unoptimized
+          />
+          <Image
+            src={imageUrl}
             alt={imageObj?.alternativeText || title}
             fill
-            className="object-cover"
+            className="object-contain"
             priority
             unoptimized
           />

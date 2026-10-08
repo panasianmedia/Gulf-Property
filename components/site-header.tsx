@@ -119,12 +119,15 @@ export function SiteHeader() {
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => window.setTimeout(() => setIsSearchFocused(false), 150)}
+                onBlur={() => setIsSearchFocused(false)}
                 placeholder="Search stories, markets, developers..."
                 className="w-full border border-input bg-muted py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:bg-background focus:ring-1 focus:ring-realty"
               />
               {isSearchFocused && searchQuery.trim() && searchSuggestions.length > 0 && (
-                <ul className="absolute left-0 right-0 top-full z-[9999] mt-1 overflow-hidden border border-border bg-background text-foreground shadow-2xl">
+                <ul
+                  onMouseDown={(event) => event.preventDefault()}
+                  className="absolute left-0 right-0 top-full z-[9999] mt-1 overflow-hidden border border-border bg-background text-foreground shadow-2xl"
+                >
                   {searchSuggestions.map((article) => (
                     <li key={article.id}>
                       <a

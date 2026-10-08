@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { CategoryBadge } from "@/components/category-badge"
+import { FramedImage } from "@/components/framed-image"
 import { formatDate, timeAgo } from "@/lib/utils"
 import type { ArticleUI } from "@/components/CategoryLayout"
 import { AdSquareBox, AdLeaderboardBox } from "@/components/ad-box"
@@ -34,16 +35,15 @@ export function ConstructionLatest({ highlights, megaprojects, squareAd, leaderb
             {/* Main project story */}
             {constructionMain && <article>
               <Link href={`/articles/${constructionMain.slug}`} className="group block">
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-                  <img
-                    src={constructionMain.image || "/images/placeholder.svg"}
-                    alt={constructionMain.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                <FramedImage
+                  src={constructionMain.image || "/images/placeholder.svg"}
+                  alt={constructionMain.title}
+                  className="aspect-[16/10] w-full"
+                >
                   <div className="absolute left-0 top-0">
                     <CategoryBadge category={constructionMain.category} variant="overlay" />
                   </div>
-                </div>
+                </FramedImage>
                 <h3 className="mt-4 text-balance text-2xl font-extrabold leading-tight text-foreground line-clamp-2 group-hover:text-realty md:text-3xl">
                   {constructionMain.title}
                 </h3>
@@ -61,13 +61,11 @@ export function ConstructionLatest({ highlights, megaprojects, squareAd, leaderb
               {constructionCards.map((a) => (
                 <article key={a.id}>
                   <Link href={`/articles/${a.slug}`} className="group block">
-                    <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                      <img
-                        src={a.image || "/images/placeholder.svg"}
-                        alt={a.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
+                    <FramedImage
+                      src={a.image || "/images/placeholder.svg"}
+                      alt={a.title}
+                      className="aspect-video w-full"
+                    />
                     <div className="mt-2">
                       <CategoryBadge category={a.category} />
                       <h4 className="mt-1 text-sm font-bold leading-snug text-foreground line-clamp-3 group-hover:text-realty">

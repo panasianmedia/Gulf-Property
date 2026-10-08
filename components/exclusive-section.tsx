@@ -4,6 +4,7 @@ import { timeAgo } from "@/lib/utils"
 import { homeSubSpanLabels } from "@/lib/site-config"
 import type { ArticleUI } from "@/components/CategoryLayout"
 import { AdLeaderboardBox } from "@/components/ad-box"
+import { FramedImage } from "@/components/framed-image"
 import type { AdSlot } from "@/lib/articlesdata"
 
 interface ExclusiveSectionProps {
@@ -43,13 +44,11 @@ export function ExclusiveSection({ trending, leaderboardAd }: ExclusiveSectionPr
                 href={`/articles/${article.slug}`}
                 className="group flex flex-col border border-border bg-card p-4 transition-all hover:shadow-md"
               >
-                <div className="relative mb-3 aspect-video w-full">
-                  <img
-                    src={article.image || "/placeholder.svg"}
-                    alt={article.title || ""}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
+                <FramedImage
+                  src={article.image || "/placeholder.svg"}
+                  alt={article.title || ""}
+                  className="mb-3 aspect-video w-full"
+                />
                 <div className="flex items-center justify-between">
                   <CategoryBadge category={article.category} />
                   <time className="text-xs font-medium text-muted-foreground">
@@ -74,13 +73,11 @@ export function ExclusiveSection({ trending, leaderboardAd }: ExclusiveSectionPr
             {secondaryStories.map((a) => (
               <article key={a.id} className="border-t border-border pt-5 first:border-t-0 first:pt-0 lg:first:border-t-0">
                 <Link href={`/articles/${a.slug}`} className="group block">
-                  <div className="relative aspect-video w-full">
-                    <img
-                      src={a.image || "/placeholder.svg"}
-                      alt={a.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
+                  <FramedImage
+                    src={a.image || "/placeholder.svg"}
+                    alt={a.title}
+                    className="aspect-video w-full"
+                  />
                   <div className="mt-3">
                     <CategoryBadge category={a.category} />
                     <h4 className="mt-1 text-lg font-bold leading-snug text-foreground line-clamp-2 group-hover:text-realty">

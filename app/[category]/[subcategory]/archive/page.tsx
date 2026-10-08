@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { FramedImage } from '@/components/framed-image'
 import { getArchiveArticles, mapStrapiArticleToUI } from '@/lib/articlesdata'
 
 interface PageProps {
@@ -34,7 +35,7 @@ export default async function ArchivePage({ params, searchParams }: PageProps) {
                 const item = mapStrapiArticleToUI(article)
                 return <>
                   {item.image !== '/images/placeholder.svg' && (
-                    <img src={item.image} alt={item.title} className="mb-4 aspect-video w-full object-cover" />
+                    <FramedImage src={item.image} alt={item.title} className="mb-4 aspect-video w-full" />
                   )}
                   <time className="text-xs text-muted-foreground">
                     {new Date(item.dateline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

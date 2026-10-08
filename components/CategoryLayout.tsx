@@ -3,6 +3,7 @@
 import { Suspense } from "react"
 import Link from "next/link"
 import { CategoryBadge } from "@/components/category-badge"
+import { FramedImage } from "@/components/framed-image"
 import { formatDate, timeAgo } from "@/lib/utils"
 import { AdSquareBox, AdLeaderboardBox } from "@/components/ad-box"
 import type { AdSlots } from "@/lib/articlesdata"
@@ -99,16 +100,15 @@ function UniversalCategoryContent({
             {/* 1 Main Story */}
             <div className="lg:col-span-8">
               <Link href={`/articles/${leadStory.slug}`} className="group block">
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-                  <img
-                    src={leadStory.image || "/images/placeholder.svg"}
-                    alt={leadStory.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                <FramedImage
+                  src={leadStory.image || "/images/placeholder.svg"}
+                  alt={leadStory.title}
+                  className="aspect-[16/9] w-full"
+                >
                   <div className="absolute left-3 top-3">
                     <CategoryBadge category={leadStory.category} variant="overlay" />
                   </div>
-                </div>
+                </FramedImage>
 
                 <h2 className="mt-4 text-2xl font-extrabold leading-tight text-foreground group-hover:text-realty md:text-4xl">
                   {leadStory.title}
@@ -171,13 +171,11 @@ function UniversalCategoryContent({
               <article key={item.id} className="flex flex-col justify-between border-b border-border pb-6 sm:border-b-0">
                 <div>
                   <Link href={`/articles/${item.slug}`} className="group block">
-                    <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                      <img
-                        src={item.image || "/images/placeholder.svg"}
-                        alt={item.title}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
+                    <FramedImage
+                      src={item.image || "/images/placeholder.svg"}
+                      alt={item.title}
+                      className="aspect-video w-full"
+                    />
                     <div className="mt-3">
                       <CategoryBadge category={item.category} />
                       <h3 className="mt-1 text-base font-bold leading-snug text-foreground group-hover:text-realty line-clamp-2">
@@ -248,13 +246,11 @@ function UniversalCategoryContent({
             {spotlightArticles.slice(0, 3).map((item) => (
               <article key={item.id} className="group flex flex-col justify-between border-b border-border pb-6 sm:border-b-0">
                 <Link href={`/articles/${item.slug}`}>
-                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-                    <img
-                      src={item.image || "/images/placeholder.svg"}
-                      alt={item.title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
+                  <FramedImage
+                    src={item.image || "/images/placeholder.svg"}
+                    alt={item.title}
+                    className="aspect-[4/3] w-full"
+                  />
                   <div className="mt-3">
                     <CategoryBadge category={item.category} />
                     <h3 className="mt-1 text-sm font-bold leading-snug text-foreground group-hover:text-realty line-clamp-2">

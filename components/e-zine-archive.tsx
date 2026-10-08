@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useMemo, useState } from "react"
+import { FramedImage } from "@/components/framed-image"
 import type { MagazineIssue } from "@/lib/articlesdata"
 
 const monthNames = [
@@ -122,10 +123,10 @@ export function EZineArchive({ issues }: { issues: MagazineIssue[] }) {
                   >
                     <div className="rounded-[20px] border border-[#d5b36f]/30 bg-[#f0e5cf] p-3 shadow-inner">
                       <div className="overflow-hidden rounded-[16px] border border-[#d5b36f]/20 bg-[#e9e0cf]">
-                        <img
+                        <FramedImage
                           src={featuredIssue.cover}
                           alt={featuredIssue.title}
-                          className="aspect-[3/4] w-full object-cover"
+                          className="aspect-[3/4] w-full"
                         />
                       </div>
                     </div>
@@ -205,10 +206,11 @@ export function EZineArchive({ issues }: { issues: MagazineIssue[] }) {
                         <div className="absolute left-4 top-4 z-10 rounded-full border border-[#d5b36f]/30 bg-[#0c1b2b]/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#f7d48f]">
                           {new Date(issue.date).toLocaleDateString("en-US", { month: "short" })} {new Date(issue.date).getFullYear()}
                         </div>
-                        <img
+                        <FramedImage
                           src={issue.cover}
                           alt={issue.title}
-                          className="aspect-[3/4] w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                          className="aspect-[3/4] w-full"
+                          imageClassName="transition duration-500 group-hover:scale-[1.04]"
                         />
                         <div className="absolute bottom-4 right-4 rounded-full border border-[#d5b36f]/40 bg-[#0d1724]/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#f7d48f]">
                           {Math.max(1, issue.pages?.length ?? 8)} Pages
