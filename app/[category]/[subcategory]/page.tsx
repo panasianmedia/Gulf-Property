@@ -70,7 +70,6 @@ export default async function DynamicSubcategoryPage({ params }: PageProps) {
   const topStories = rawData.topStories.map(mapStrapiArticleToUI);
   const latestArticles = rawData.latest.map(mapStrapiArticleToUI);
   const opinionArticles = rawData.marketInsights.map(mapStrapiArticleToUI);
-  const spotlightArticles = rawData.spotlight.map(mapStrapiArticleToUI);
 
   return (
     <CategoryLayout
@@ -81,8 +80,6 @@ export default async function DynamicSubcategoryPage({ params }: PageProps) {
       topStories={topStories}
       latestArticles={latestArticles}
       opinionArticles={opinionArticles}
-      spotlightArticles={spotlightArticles}
-      section5Title={`${subCategoryTitle} Spotlight`}
       ads={ads}
     />
   );

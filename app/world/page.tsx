@@ -17,8 +17,6 @@ export default async function WorldPage() {
     topStories={data.topStories.map(mapStrapiArticleToUI)}
     latestArticles={data.latest.map(mapStrapiArticleToUI)}
     opinionArticles={data.marketInsights.map(mapStrapiArticleToUI)}
-    spotlightArticles={data.spotlight.map(mapStrapiArticleToUI)}
-    section5Title="Global Markets Spotlight"
     ads={ads}
   />
 }

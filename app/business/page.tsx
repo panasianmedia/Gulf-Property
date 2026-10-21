@@ -15,8 +15,6 @@ export default async function BusinessPage() {
     topStories={data.topStories.map(mapStrapiArticleToUI)}
     latestArticles={data.latest.map(mapStrapiArticleToUI)}
     opinionArticles={data.marketInsights.map(mapStrapiArticleToUI)}
-    spotlightArticles={data.spotlight.map(mapStrapiArticleToUI)}
-    section5Title="Corporate & Market Spotlight"
     ads={ads}
   />
 }

@@ -413,15 +413,53 @@ export async function getActiveSubcategoryData(subcategory: string) {
   const topStories = bySlot('top', 4);
   const latest = bySlot('latest', 6);
   const marketInsights = bySlot('market', 3);
-  const spotlight = bySlot('spotlight', 4);
 
   return {
     leadStory: lead[0] || null,
     topStories,
     latest,
     marketInsights,
-    spotlight,
   };
+}
+
+export async function getSpotlightArticles(): Promise<Article[]> {
+  try {
+    const pageSize = 100;
+    const maxPages = 20;
+    const matches: Article[] = [];
+    const seenIds = new Set<number>();
+
+    for (let page = 1; page <= maxPages; page += 1) {
+      const res = await fetch(
+        `${STRAPI_URL}/api/articles?filters[SubCategorySub][$containsi]=spotlight&sort[0]=Date:desc&sort[1]=publishedAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`,
+        { next: { revalidate: 0 }, cache: 'no-store' }
+      );
+
+      if (!res.ok) {
+        throw new Error(`Strapi returned ${res.status} while fetching Spotlight articles`);
+      }
+      const data = await res.json();
+      const rows: Article[] = data.data || [];
+
+      for (const item of rows) {
+        if (seenIds.has(item.id)) continue;
+        seenIds.add(item.id);
+
+        const article = (item as any).attributes || item;
+        if (hasSubcategorySlot(article.SubCategorySub, 'spotlight')) {
+          matches.push(item);
+        }
+      }
+
+      const pageCount = data?.meta?.pagination?.pageCount || 1;
+      if (!rows.length || page >= pageCount) break;
+    }
+
+    return matches;
+  } catch (error) {
+    console.error('Error fetching Spotlight articles:', error);
+    return [];
+  }
 }
 
 // Aggregates articles across several CategorySub values (e.g. World's regions) into one feed.
@@ -450,14 +488,12 @@ export async function getActiveRegionData(subcategories: string[]) {
   const topStories = bySlot('top', 4);
   const latest = bySlot('latest', 6);
   const marketInsights = bySlot('market', 3);
-  const spotlight = bySlot('spotlight', 4);
 
   return {
     leadStory: lead[0] || null,
     topStories,
     latest,
     marketInsights,
-    spotlight,
   };
 }
 

@@ -30,7 +30,7 @@ export const navItems = [
 
 export const navFooterItems = [
   "Residential", "Commercial", "Construction", "Abu Dhabi", "Dubai", "Ras Al Khaimah", "Sharjah",
-  "GCC", "Business",
+  "GCC", "Business", "Spotlight",
   "E-zine", "About us", "Advertise", "Privacy Policy", "Terms and Conditions", "Contact",
 ] as const
 

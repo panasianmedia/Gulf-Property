@@ -15,8 +15,6 @@ export default async function GccPage() {
     topStories={data.topStories.map(mapStrapiArticleToUI)}
     latestArticles={data.latest.map(mapStrapiArticleToUI)}
     opinionArticles={data.marketInsights.map(mapStrapiArticleToUI)}
-    spotlightArticles={data.spotlight.map(mapStrapiArticleToUI)}
-    section5Title="GCC Markets Spotlight"
     ads={ads}
   />
 }

@@ -15,8 +15,6 @@ export default async function SustainabilityPage() {
     topStories={data.topStories.map(mapStrapiArticleToUI)}
     latestArticles={data.latest.map(mapStrapiArticleToUI)}
     opinionArticles={data.marketInsights.map(mapStrapiArticleToUI)}
-    spotlightArticles={data.spotlight.map(mapStrapiArticleToUI)}
-    section5Title="Green & Future-Ready Spotlight"
     ads={ads}
   />
 }

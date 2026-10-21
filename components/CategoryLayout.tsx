@@ -28,8 +28,6 @@ interface UniversalCategoryLayoutProps {
   topStories: ArticleUI[]      // 4 Top Stories
   latestArticles: ArticleUI[]  // 6 Latest Articles
   opinionArticles: ArticleUI[] // 3 Market Insights
-  spotlightArticles: ArticleUI[] // 4 Spotlight Articles
-  section5Title?: string
   ads?: AdSlots
 }
 
@@ -41,8 +39,6 @@ function UniversalCategoryContent({
   topStories,
   latestArticles,
   opinionArticles,
-  spotlightArticles,
-  section5Title = "Spotlight",
   ads,
 }: UniversalCategoryLayoutProps) {
   const parentSlug = parentCategory.toLowerCase().replace(/\s+/g, "-")
@@ -230,45 +226,7 @@ function UniversalCategoryContent({
           </div>
         </section>
 
-        {/* Rectangular Leaderboard Advertisement Box */}
-        <AdLeaderboardBox ad={ads?.rectangle2} className="mb-12" />
-
-        {/* 4. SPOTLIGHT (4 STORIES) */}
-        <section aria-label={section5Title} className="pt-2">
-          <div className="mb-6 flex items-center gap-2 border-b-2 border-foreground pb-2">
-            <span className="h-3 w-3 bg-realty" aria-hidden />
-            <h2 className="text-lg font-extrabold uppercase tracking-wide">
-              {section5Title}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {spotlightArticles.slice(0, 3).map((item) => (
-              <article key={item.id} className="group flex flex-col justify-between border-b border-border pb-6 sm:border-b-0">
-                <Link href={`/articles/${item.slug}`}>
-                  <FramedImage
-                    src={item.image || "/images/placeholder.svg"}
-                    alt={item.title}
-                    className="aspect-[4/3] w-full"
-                  />
-                  <div className="mt-3">
-                    <CategoryBadge category={item.category} />
-                    <h3 className="mt-1 text-sm font-bold leading-snug text-foreground group-hover:text-realty line-clamp-2">
-                      {item.title}
-                    </h3>
-                  </div>
-                </Link>
-                <time className="mt-2 block text-[11px] text-muted-foreground">
-                  {formatDate(item.dateline)}
-                </time>
-              </article>
-            ))}
-
-            <AdSquareBox ad={ads?.square2} className="h-full" />
-          </div>
-        </section>
-
-        {/* 5. LINK TO ARCHIVE */}
+        {/* 4. LINK TO ARCHIVE */}
         <div className="text-center mt-12 border-t border-border pt-8">
           <Link
             href={`/${parentSlug}/${subCategoryTitle.toLowerCase().replace(/\s+/g, "-")}/archive`}
