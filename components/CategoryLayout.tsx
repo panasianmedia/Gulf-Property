@@ -191,7 +191,10 @@ function UniversalCategoryContent({
           </div>
         </section>
 
-        {/* 3. MARKET INSIGHTS (3 STORIES) */}
+        {/* Rectangular Leaderboard Advertisement Box */}
+        <AdLeaderboardBox ad={ads?.rectangle2} className="mb-10" />
+
+        {/* 3. MARKET INSIGHTS (3 STORIES + SQUARE AD) */}
         <section aria-label="Market Insights" className="mb-12 bg-muted/40 p-6 md:p-8">
           <div className="mb-6 border-b border-border pb-2">
             <span className="bg-realty px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-white">
@@ -199,7 +202,7 @@ function UniversalCategoryContent({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {opinionArticles.slice(0, 3).map((item) => (
               <Link
                 key={item.id}
@@ -223,6 +226,7 @@ function UniversalCategoryContent({
                 </div>
               </Link>
             ))}
+            <AdSquareBox ad={ads?.square2} />
           </div>
         </section>
 
