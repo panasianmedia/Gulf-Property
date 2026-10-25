@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import { ThemeProvider } from '@/components/theme-provider'
 import { TopBar } from '@/components/top-bar'
 import { SiteHeader } from '@/components/site-header'
@@ -78,6 +79,18 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} bg-background`}>
       <body className="min-h-screen antialiased font-sans bg-background text-foreground">
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-PQT1FSYTKD"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-PQT1FSYTKD');
+          `}
+        </Script>
         <ThemeProvider>
           <div className="flex min-h-screen flex-col">
             <TopBar />
