@@ -101,6 +101,7 @@ export default async function ArticlePage({ params }: PageProps) {
     : article.CategorySub || article.SubCategorySub || 'General';
   const publicationDate = getPublicationDate(article);
   const updatedDate = getUpdatedDate(article, publicationDate);
+  const displayedDate = updatedDate || publicationDate;
   const author = article.Author || 'Staff Report';
   const excerpt = article.Caption || '';
   const canonicalUrl = new URL(
@@ -219,33 +220,20 @@ export default async function ArticlePage({ params }: PageProps) {
 
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            {publicationDate && (
-              <time dateTime={publicationDate.toISOString()}>
-                {publicationDate.toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                  timeZone: 'UTC',
-                })}
-              </time>
+            {displayedDate && (
+              <span>
+                {updatedDate ? 'Updated ' : ''}
+                <time dateTime={displayedDate.toISOString()}>
+                  {displayedDate.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                    timeZone: 'UTC',
+                  })}
+                </time>
+              </span>
             )}
-            {updatedDate && (
-              <>
-                {publicationDate && <span>•</span>}
-                <span>
-                  Updated{' '}
-                  <time dateTime={updatedDate.toISOString()}>
-                    {updatedDate.toLocaleDateString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                      timeZone: 'UTC',
-                    })}
-                  </time>
-                </span>
-              </>
-            )}
-            {(publicationDate || updatedDate) && <span>•</span>}
+            {displayedDate && <span>•</span>}
             <span>By {author}</span>
           </div>
 
