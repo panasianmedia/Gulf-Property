@@ -46,9 +46,9 @@ export interface Article {
   CategorySub?: string[] | string;
   SubCategorySub?: string;
   HomeSub?: string;
-  publishedAt: string;
-  createdAt: string;
-  updatedAt: string;
+  publishedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
   Image?: StrapiMedia;
 }
 
@@ -138,6 +138,72 @@ function resolveMediaUrl(rawUrl: string): string {
   }
 
   return rawUrl;
+}
+
+function getPlainText(value: any): string {
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) return value.map(getPlainText).filter(Boolean).join(' ').trim();
+  if (!value || typeof value !== 'object') return '';
+  if (typeof value.text === 'string') return value.text.trim();
+  return getPlainText(value.children);
+}
+
+function normalizeArticle(item: any): Article {
+  const data = item?.attributes || item || {};
+  const rawImage = data.Image || data.coverImage;
+  const imageData = rawImage?.data?.attributes || rawImage?.attributes || rawImage;
+  const formats = imageData?.formats;
+  const normalizedFormats = formats
+    ? Object.fromEntries(
+        Object.entries(formats).map(([name, format]: [string, any]) => [
+          name,
+          { ...format, url: format?.url ? resolveMediaUrl(format.url) : '' },
+        ])
+      )
+    : undefined;
+  const title = String(data.Title || data.title || 'Untitled Article').trim();
+  const content = data.Content || data.content;
+  const firstParagraph = Array.isArray(content)
+    ? content.find((block: any) => block?.type === 'paragraph' && getPlainText(block))
+    : undefined;
+  const description =
+    getPlainText(data.Caption || data.Description || data.description) ||
+    getPlainText(firstParagraph);
+  const authorValue = data.Author || data.author;
+  const author =
+    typeof authorValue === 'string'
+      ? authorValue.trim()
+      : String(authorValue?.name || authorValue?.Name || '').trim();
+
+  return {
+    ...data,
+    id: Number(item?.id || data.id) || 0,
+    documentId: item?.documentId || data.documentId,
+    Title: title,
+    Slug: data.Slug || data.slug,
+    Caption: description || null,
+    Content: content,
+    Author: author || 'Staff Report',
+    CategorySub:
+      data.CategorySub || data.category || data.subcategory || data.SubCategorySub,
+    Date: data.Date || data.date || data.publishedAt || data.createdAt,
+    publishedAt: data.publishedAt,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+    Image: imageData
+      ? {
+          ...imageData,
+          url: imageData.url ? resolveMediaUrl(imageData.url) : '',
+          alternativeText:
+            imageData.alternativeText ||
+            imageData.caption ||
+            data.ImageDescription ||
+            data.imageDescription ||
+            '',
+          formats: normalizedFormats,
+        }
+      : undefined,
+  };
 }
 
 function extractMediaUrl(value: unknown): string | null {
@@ -596,7 +662,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
     if (directRes.ok) {
       const directJson = await directRes.json();
       const directMatch = directJson.data?.[0];
-      if (directMatch) return directMatch;
+      if (directMatch) return normalizeArticle(directMatch);
     }
   } catch (error) {
     console.error(`Error fetching article by exact slug [${slug}]:`, error);
@@ -627,7 +693,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
       );
     });
 
-    return target || null;
+    return target ? normalizeArticle(target) : null;
   } catch (error) {
     console.error(`Error fetching article by slug [${slug}]:`, error);
     return null;
@@ -790,8 +856,8 @@ export async function getMagazineIssueBySlug(slug: string): Promise<MagazineIssu
 // UI DATA MAPPER
 // -------------------------------------------------------------
 export function mapStrapiArticleToUI(a: any): UIArticle {
-  const data = a?.attributes || a || {};
-  const imageObj = data.Image || data.coverImage;
+  const data = normalizeArticle(a);
+  const imageObj = data.Image;
   let imageUrl = '/images/placeholder.svg';
 
   if (imageObj) {
@@ -802,14 +868,10 @@ export function mapStrapiArticleToUI(a: any): UIArticle {
       imageObj.url ||
       imageUrl;
 
-    imageUrl = resolveMediaUrl(rawUrl);
+    imageUrl = rawUrl;
   }
 
-  let excerptText = data.Caption || '';
-  if (!excerptText && Array.isArray(data.Content)) {
-    const firstParagraph = data.Content.find((b: any) => b.type === 'paragraph' && b.children?.[0]?.text);
-    excerptText = firstParagraph?.children?.[0]?.text || '';
-  }
+  const excerptText = data.Caption || '';
 
   const categoryVal = Array.isArray(data.CategorySub)
     ? data.CategorySub[0]
@@ -817,11 +879,11 @@ export function mapStrapiArticleToUI(a: any): UIArticle {
 
   return {
     id: String(a?.documentId || a?.id || data?.id || Math.random()),
-    title: data.Title || data.title || 'Untitled Article',
-    slug: data.Slug || data.slug || slugify(data.Title || data.title || ''),
+    title: data.Title,
+    slug: data.Slug || data.slug || slugify(data.Title),
     category: categoryVal,
     content: excerptText,
-    dateline: data.Date || data.publishedAt || new Date().toISOString(),
+    dateline: data.Date || data.publishedAt || data.createdAt || '',
     image: imageUrl,
     author: data.Author || 'Staff Report',
     bullets: [],

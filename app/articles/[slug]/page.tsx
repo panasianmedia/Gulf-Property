@@ -1,42 +1,80 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { getArticleBySlug } from '@/lib/articlesdata';
+import { getArticleBySlug, type Article } from '@/lib/articlesdata';
 import { SocialShare } from '@/components/social-share';
+
+const SITE_URL = 'https://www.thegulfproperty.com';
+
+function getValidDate(value?: string): Date | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function getPublicationDate(article: Article): Date | undefined {
+  return [article.Date, article.publishedAt, article.createdAt]
+    .map(getValidDate)
+    .find((date): date is Date => date !== undefined);
+}
+
+function getUpdatedDate(article: Article, publicationDate?: Date): Date | undefined {
+  const updatedDate = getValidDate(article.updatedAt);
+  if (!updatedDate || (publicationDate && updatedDate <= publicationDate)) return undefined;
+  return updatedDate;
+}
+
+function getSeoDescription(article: Article, title: string): string {
+  const description =
+    article.Caption?.trim() || `Read ${title} and the latest property news on Gulf Property.`;
+  if (description.length <= 160) return description;
+  return `${description.slice(0, 157).trimEnd()}...`;
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const rawArticle: any = await getArticleBySlug(slug);
-  const article = rawArticle?.attributes || rawArticle;
-  const title = article?.Title || article?.title || 'Untitled Article';
-  const excerpt = article?.Caption || article?.excerpt || 'Read the latest Gulf Property coverage.';
-  const imageObj = article?.Image || article?.coverImage;
+  const article = await getArticleBySlug(slug);
+  if (!article) notFound();
+
+  const title = article.Title;
+  const description = getSeoDescription(article, title);
+  const author = article.Author || 'Staff Report';
+  const publicationDate = getPublicationDate(article);
+  const updatedDate = getUpdatedDate(article, publicationDate);
+  const canonicalUrl = new URL(
+    `/articles/${encodeURIComponent(article.Slug || article.slug || slug)}`,
+    SITE_URL
+  ).toString();
+  const imageObj = article.Image;
   const rawImageUrl =
     imageObj?.formats?.large?.url ||
     imageObj?.formats?.medium?.url ||
     imageObj?.url ||
     '/images/Gulf Property.png';
-
-  const imageUrl = rawImageUrl.startsWith('http') ? rawImageUrl : `https://www.thegulfproperty.com${rawImageUrl}`;
+  const imageUrl = new URL(rawImageUrl, SITE_URL).toString();
+  const imageAlt = imageObj?.alternativeText || title;
 
   return {
     title: `${title} | Gulf Property`,
-    description: excerpt,
+    description,
     alternates: {
-      canonical: `https://www.thegulfproperty.com/articles/${slug}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
       title: `${title} | Gulf Property`,
-      description: excerpt,
-      url: `https://www.thegulfproperty.com/articles/${slug}`,
-      images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
+      description,
+      url: canonicalUrl,
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: imageAlt }],
       type: 'article',
+      authors: [author],
+      publishedTime: publicationDate?.toISOString(),
+      modifiedTime: updatedDate?.toISOString(),
     },
     twitter: {
       card: 'summary_large_image',
       title: `${title} | Gulf Property`,
-      description: excerpt,
-      images: [imageUrl],
+      description,
+      images: [{ url: imageUrl, alt: imageAlt }],
     },
   };
 }
@@ -47,47 +85,50 @@ interface PageProps {
 
 export default async function ArticlePage({ params }: PageProps) {
   const { slug } = await params;
-  const rawArticle: any = await getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
+  if (!article) notFound();
 
-  if (!rawArticle) {
-    notFound();
-  }
-
-  const article = rawArticle.attributes || rawArticle;
-
-  // Extract Title
-  const title = article.Title || article.title || 'Untitled Article';
-
-  // Extract and rewrite Image URL to public domain
-  const imageObj = article.Image || article.coverImage;
-  let rawImageUrl =
+  const title = article.Title;
+  const imageObj = article.Image;
+  const rawImageUrl =
     imageObj?.formats?.large?.url ||
     imageObj?.formats?.medium?.url ||
     imageObj?.url ||
     null;
-
-  let imageUrl = rawImageUrl;
-  if (imageUrl) {
-    const PUBLIC_R2_URL = 'https://pub-9d1f70c10dca4e94a9b69b8e3f8cbffd.r2.dev'; // <-- Paste your pub-xxx.r2.dev URL here
-    imageUrl = imageUrl.replace(
-      /^https:\/\/[^/]+\.r2\.cloudflarestorage\.com\/gulf-property-media/,
-      PUBLIC_R2_URL
-    );
-  }
-
-  // Extract Category
+  const imageUrl = rawImageUrl ? new URL(rawImageUrl, SITE_URL).toString() : null;
   const category = Array.isArray(article.CategorySub)
     ? article.CategorySub[0]
-    : article.CategorySub || article.subcategory || article.category || 'General';
-
-  // Extract Date
-  const dateline = article.Date || article.publishedAt || new Date().toISOString();
-
-  // Extract Author
-  const author = article.Author || article.author || 'Staff Report';
-
-  // Extract Caption / Excerpt
-  const excerpt = article.Caption || article.excerpt || '';
+    : article.CategorySub || article.SubCategorySub || 'General';
+  const publicationDate = getPublicationDate(article);
+  const updatedDate = getUpdatedDate(article, publicationDate);
+  const author = article.Author || 'Staff Report';
+  const excerpt = article.Caption || '';
+  const canonicalUrl = new URL(
+    `/articles/${encodeURIComponent(article.Slug || article.slug || slug)}`,
+    SITE_URL
+  ).toString();
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: title,
+    description: getSeoDescription(article, title),
+    image: imageUrl || `${SITE_URL}/images/Gulf%20Property.png`,
+    mainEntityOfPage: canonicalUrl,
+    author: {
+      '@type': author === 'Staff Report' ? 'Organization' : 'Person',
+      name: author,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Gulf Property',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/images/Gulf%20Property.png`,
+      },
+    },
+    ...(publicationDate && { datePublished: publicationDate.toISOString() }),
+    ...(updatedDate && { dateModified: updatedDate.toISOString() }),
+  };
 
   // Render Rich Text Blocks
   // Renders a single Strapi rich-text node, preserving bold/italic/underline/etc.
@@ -158,67 +199,94 @@ export default async function ArticlePage({ params }: PageProps) {
   };
 
   return (
-    <article className="max-w-4xl mx-auto px-4 py-10">
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded">
-          {category}
-        </span>
-      </div>
-
-      <h1 className="mb-6 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
-        {title}
-      </h1>
-
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <span>
-            {new Date(dateline).toLocaleDateString('en-US', {
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-            })}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
+        }}
+      />
+      <article className="max-w-4xl mx-auto px-4 py-10">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded">
+            {category}
           </span>
-          <span>•</span>
-          <span>By {author}</span>
         </div>
 
-        <SocialShare
-          title={title}
-          url={`https://www.thegulfproperty.com/articles/${slug}`}
-          className="justify-end"
-        />
-      </div>
+        <h1 className="mb-6 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
+          {title}
+        </h1>
 
-      {imageUrl && (
-        <div className="relative mb-8 h-80 w-full overflow-hidden rounded-lg bg-muted sm:h-[460px]">
-          <Image
-            src={imageUrl}
-            alt=""
-            aria-hidden
-            fill
-            className="scale-125 object-cover opacity-100 blur-md"
-            unoptimized
-          />
-          <Image
-            src={imageUrl}
-            alt={imageObj?.alternativeText || title}
-            fill
-            className="object-contain"
-            priority
-            unoptimized
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            {publicationDate && (
+              <time dateTime={publicationDate.toISOString()}>
+                {publicationDate.toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                  timeZone: 'UTC',
+                })}
+              </time>
+            )}
+            {updatedDate && (
+              <>
+                {publicationDate && <span>•</span>}
+                <span>
+                  Updated{' '}
+                  <time dateTime={updatedDate.toISOString()}>
+                    {updatedDate.toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                      timeZone: 'UTC',
+                    })}
+                  </time>
+                </span>
+              </>
+            )}
+            {(publicationDate || updatedDate) && <span>•</span>}
+            <span>By {author}</span>
+          </div>
+
+          <SocialShare
+            title={title}
+            url={canonicalUrl}
+            className="justify-end"
           />
         </div>
-      )}
 
-      {excerpt && (
-        <p className="mb-6 border-l-4 border-red-600 pl-4 text-lg font-medium leading-relaxed text-muted-foreground">
-          {excerpt}
-        </p>
-      )}
+        {imageUrl && (
+          <div className="relative mb-8 h-80 w-full overflow-hidden rounded-lg bg-muted sm:h-[460px]">
+            <Image
+              src={imageUrl}
+              alt=""
+              aria-hidden
+              fill
+              className="scale-125 object-cover opacity-100 blur-md"
+              unoptimized
+            />
+            <Image
+              src={imageUrl}
+              alt={imageObj?.alternativeText || ''}
+              fill
+              className="object-contain"
+              priority
+              unoptimized
+            />
+          </div>
+        )}
 
-      <div className="prose prose-lg max-w-none space-y-4 text-foreground">
-        {renderContent(article.Content || article.content)}
-      </div>
-    </article>
+        {excerpt && (
+          <p className="mb-6 border-l-4 border-red-600 pl-4 text-lg font-medium leading-relaxed text-muted-foreground">
+            {excerpt}
+          </p>
+        )}
+
+        <div className="prose prose-lg max-w-none space-y-4 text-foreground">
+          {renderContent(article.Content)}
+        </div>
+      </article>
+    </>
   );
 }
