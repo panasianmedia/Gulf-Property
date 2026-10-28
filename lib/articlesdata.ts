@@ -180,7 +180,7 @@ function normalizeArticle(item: any): Article {
     id: Number(item?.id || data.id) || 0,
     documentId: item?.documentId || data.documentId,
     Title: title,
-    Slug: data.Slug || data.slug,
+    Slug: data.Slug || data.slug || slugify(title),
     Caption: description || null,
     Content: content,
     Author: author || 'Staff Report',
@@ -700,6 +700,44 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   }
 }
 
+export async function getPublishedArticlesForSitemap(): Promise<Article[]> {
+  const pageSize = 100;
+  const articles: Article[] = [];
+  let page = 1;
+  let pageCount = 1;
+
+  do {
+    const url =
+      `${STRAPI_URL}/api/articles?filters[publishedAt][$notNull]=true` +
+      `&sort[0]=publishedAt:desc&pagination[page]=${page}` +
+      `&pagination[pageSize]=${pageSize}`;
+    const response = await fetch(url, {
+      next: { revalidate: 3600 },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch published articles for sitemap: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const json = await response.json();
+    if (!Array.isArray(json?.data)) {
+      throw new Error('Invalid articles response while generating sitemap.');
+    }
+
+    articles.push(
+      ...json.data
+        .map(normalizeArticle)
+        .filter((article: Article) => Boolean(article.publishedAt))
+    );
+    pageCount = json.meta?.pagination?.pageCount || page;
+    page += 1;
+  } while (page <= pageCount);
+
+  return articles;
+}
+
 // -------------------------------------------------------------
 // ADVERTISEMENTS
 // -------------------------------------------------------------
@@ -806,7 +844,7 @@ function normalizeMagazineIssue(item: any): MagazineIssue | null {
   };
 }
 
-async function fetchMagazineCollection(): Promise<any[]> {
+async function fetchMagazineCollection(revalidateSeconds = 0): Promise<any[]> {
   const endpoints = [
     'magazine-issues',
     'magazine-issue',
@@ -815,25 +853,47 @@ async function fetchMagazineCollection(): Promise<any[]> {
   ];
 
   for (const endpoint of endpoints) {
-    try {
-      const res = await fetch(
-        `${STRAPI_URL}/api/${endpoint}?populate=*&sort=publishedAt:desc`,
-        {
-          next: { revalidate: 0 },
-          cache: 'no-store',
+    const rows: any[] = [];
+    let page = 1;
+    let pageCount = 1;
+    let failed = false;
+
+    while (page <= pageCount) {
+      try {
+        const query =
+          `filters[publishedAt][$notNull]=true&populate=*&sort=publishedAt:desc` +
+          `&pagination[page]=${page}&pagination[pageSize]=100`;
+        const options =
+          revalidateSeconds > 0
+            ? { next: { revalidate: revalidateSeconds } }
+            : { next: { revalidate: 0 }, cache: 'no-store' as const };
+        const response = await fetch(`${STRAPI_URL}/api/${endpoint}?${query}`, options);
+        if (!response.ok) {
+          failed = true;
+          break;
         }
-      );
 
-      if (!res.ok) continue;
+        const json = await response.json();
+        if (!Array.isArray(json?.data)) {
+          failed = true;
+          break;
+        }
+        if (page === 1 && json.data.length === 0) {
+          failed = true;
+          break;
+        }
 
-      const json = await res.json();
-      const rows = Array.isArray(json?.data) ? json.data : [];
-      if (rows.length) {
-        return rows;
+        rows.push(...json.data);
+        pageCount = json.meta?.pagination?.pageCount || page;
+        page += 1;
+      } catch (error) {
+        console.error(`Error fetching magazine endpoint [${endpoint}]:`, error);
+        failed = true;
+        break;
       }
-    } catch (error) {
-      console.error(`Error fetching magazine endpoint [${endpoint}]:`, error);
     }
+
+    if (!failed && rows.length) return rows;
   }
 
   return [];
@@ -841,6 +901,13 @@ async function fetchMagazineCollection(): Promise<any[]> {
 
 export async function getMagazineIssues(): Promise<MagazineIssue[]> {
   const rows = await fetchMagazineCollection();
+  return rows
+    .map(normalizeMagazineIssue)
+    .filter(Boolean) as MagazineIssue[];
+}
+
+export async function getMagazineIssuesForSitemap(): Promise<MagazineIssue[]> {
+  const rows = await fetchMagazineCollection(3600);
   return rows
     .map(normalizeMagazineIssue)
     .filter(Boolean) as MagazineIssue[];

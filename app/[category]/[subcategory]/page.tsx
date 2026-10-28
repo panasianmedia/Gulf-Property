@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getActiveSubcategoryData, getAdvertisements, mapStrapiArticleToUI } from "@/lib/articlesdata";
 import { CategoryLayout } from "@/components/CategoryLayout";
+import { createPageMetadata } from "@/lib/seo";
 
 // Exact dropdown categories mapping matching your Navbar
 const CATEGORY_MAP: Record<string, { title: string; subcategories: Record<string, string> }> = {
@@ -37,6 +38,19 @@ interface PageProps {
     category: string;
     subcategory: string;
   }>;
+}
+
+export async function generateMetadata({ params }: PageProps) {
+  const { category, subcategory } = await params;
+  const categoryConfig = CATEGORY_MAP[category.toLowerCase()];
+  const subCategoryTitle = categoryConfig?.subcategories[subcategory.toLowerCase()];
+  if (!categoryConfig || !subCategoryTitle) notFound();
+
+  return createPageMetadata({
+    title: `${subCategoryTitle} Real Estate News`,
+    description: `Read the latest real estate, property market and construction news for ${subCategoryTitle}, covered by Gulf Property.`,
+    pathname: `/${category.toLowerCase()}/${subcategory.toLowerCase()}`,
+  });
 }
 
 export default async function DynamicSubcategoryPage({ params }: PageProps) {

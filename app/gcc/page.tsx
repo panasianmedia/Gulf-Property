@@ -1,5 +1,13 @@
 import { getActiveSubcategoryData, getAdvertisements, mapStrapiArticleToUI } from "@/lib/articlesdata"
 import { CategoryLayout } from "@/components/CategoryLayout"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "GCC Real Estate News",
+  description:
+    "Follow property, real estate market and construction news across the Gulf Cooperation Council countries.",
+  pathname: "/gcc",
+})
 
 export default async function GccPage() {
   const [data, ads] = await Promise.all([getActiveSubcategoryData("GCC"), getAdvertisements()])

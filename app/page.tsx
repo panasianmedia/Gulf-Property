@@ -4,8 +4,16 @@ import { HeroSection } from "@/components/hero-section"
 import { RealtyBytes } from "@/components/realty-bytes"
 import { ExclusiveSection } from "@/components/exclusive-section"
 import { ConstructionLatest } from "@/components/construction-latest"
+import { createPageMetadata } from "@/lib/seo"
 
 export const revalidate = 60 // Fresh data every 60s
+
+export const metadata = createPageMetadata({
+  title: "Real Estate News, Market Data & Property Insights",
+  description:
+    "Follow Gulf Property for the latest UAE and Gulf real estate news, market data, construction updates and property insights.",
+  pathname: "/",
+})
 
 export default async function HomePage() {
   const [data, ads] = await Promise.all([getHomePageData(), getAdvertisements()])

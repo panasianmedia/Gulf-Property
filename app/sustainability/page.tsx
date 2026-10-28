@@ -1,5 +1,13 @@
 import { getActiveSubcategoryData, getAdvertisements, mapStrapiArticleToUI } from "@/lib/articlesdata"
 import { CategoryLayout } from "@/components/CategoryLayout"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "Sustainable Real Estate News",
+  description:
+    "Read Gulf Property reporting on sustainability, green buildings and environmental initiatives in real estate.",
+  pathname: "/sustainability",
+})
 
 export default async function SustainabilityPage() {
   const [data, ads] = await Promise.all([getActiveSubcategoryData("Sustainability"), getAdvertisements()])

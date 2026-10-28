@@ -1,4 +1,12 @@
 import Link from "next/link"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "Gulf Property Editorial Archives",
+  description:
+    "Browse Gulf Property editorial archives, magazine issues and property stories shared by readers.",
+  pathname: "/archives",
+})
 
 export default function ArchivesLandingPage() {
   return (

@@ -4,6 +4,14 @@ import { CategoryBadge } from "@/components/category-badge"
 import { FramedImage } from "@/components/framed-image"
 import { formatDate } from "@/lib/utils"
 import { getAdvertisements, getSpotlightArticles, mapStrapiArticleToUI } from "@/lib/articlesdata"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "Real Estate Spotlight",
+  description:
+    "Discover featured Gulf Property stories, interviews and selected real estate coverage from across the region.",
+  pathname: "/spotlight",
+})
 
 export default async function SpotlightPage() {
   const [articles, ads] = await Promise.all([getSpotlightArticles(), getAdvertisements()])

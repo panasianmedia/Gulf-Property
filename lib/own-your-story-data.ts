@@ -99,3 +99,42 @@ export async function getOwnYourStoryBySlug(slug: string): Promise<OwnYourStoryR
   }
   return fallbackStories.find((story) => story.slug === slug) || null
 }
+
+export async function getPublishedOwnYourStoriesForSitemap(): Promise<OwnYourStoryRecord[]> {
+  const pageSize = 100
+  const stories: OwnYourStoryRecord[] = []
+  let page = 1
+  let pageCount = 1
+
+  do {
+    const url =
+      `${getEndpoint()}?filters[publishedAt][$notNull]=true` +
+      `&sort=publishedAt:desc&pagination[page]=${page}` +
+      `&pagination[pageSize]=${pageSize}&populate=*`
+    const response = await fetch(url, { next: { revalidate: 3600 } })
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch published Own Your Story entries for sitemap: ${response.status} ${response.statusText}`,
+      )
+    }
+
+    const payload = await response.json()
+    if (!Array.isArray(payload?.data)) {
+      throw new Error("Invalid Own Your Story response while generating sitemap.")
+    }
+
+    stories.push(
+      ...payload.data
+        .filter((entry: any) => {
+          const data = entry?.attributes || entry
+          return Boolean(data?.Slug || data?.slug)
+        })
+        .map(normalizeStory)
+        .filter((story: OwnYourStoryRecord) => story.publishedAt),
+    )
+    pageCount = payload.meta?.pagination?.pageCount || page
+    page += 1
+  } while (page <= pageCount)
+
+  return stories
+}

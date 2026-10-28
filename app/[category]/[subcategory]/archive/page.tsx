@@ -1,10 +1,25 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
+import { createPageMetadata } from '@/lib/seo'
 import { FramedImage } from '@/components/framed-image'
 import { getArchiveArticles, mapStrapiArticleToUI } from '@/lib/articlesdata'
 
 interface PageProps {
   params: Promise<{ category: string; subcategory: string }>
   searchParams: Promise<{ year?: string; month?: string; page?: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { category, subcategory } = await params
+  const canonicalPath = `/${encodeURIComponent(category)}/${encodeURIComponent(subcategory)}`
+  return {
+    ...createPageMetadata({
+      title: `${subcategory} Article Archive`,
+      description: `Browse earlier Gulf Property news and articles about ${subcategory}.`,
+      pathname: canonicalPath,
+    }),
+    robots: { index: false, follow: true },
+  }
 }
 
 export default async function ArchivePage({ params, searchParams }: PageProps) {

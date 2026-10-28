@@ -18,14 +18,10 @@ export const metadata: Metadata = {
     'Gulf Property delivers high-density editorial coverage of residential, commercial, construction, luxury and PropTech real estate, plus live market data.',
   generator: 'v0.app',
   applicationName: 'Gulf Property',
-  alternates: {
-    canonical: 'https://www.thegulfproperty.com',
-  },
   openGraph: {
     title: 'Gulf Property',
     description:
       'Real Estate Journalism, Market Data & Property Insights',
-    url: 'https://www.thegulfproperty.com',
     siteName: 'Gulf Property',
     locale: 'en_US',
     type: 'website',
